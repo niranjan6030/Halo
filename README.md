@@ -246,7 +246,7 @@ Accessibility and Bluetooth after every rebuild — expected, not a bug.
 
 ```bash
 xcode-select --install   # skip if already installed
-git clone <this-repo-url>
+git clone https://github.com/niranjan6030/Halo.git
 cd Halo
 Scripts/build-app.sh install
 ```
