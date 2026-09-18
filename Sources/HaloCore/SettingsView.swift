@@ -14,8 +14,6 @@ public struct SettingsView: View {
         Form {
             Section {
                 VStack(spacing: 10) {
-                    IslandGlyph()
-                        .frame(width: 96, height: 60)
                     Text("Halo")
                         .font(.system(size: 20, weight: .semibold))
                     Text("Live activities, alerts and controls that grow out of the notch, the way they do on iPhone.")
