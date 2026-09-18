@@ -273,8 +273,9 @@ public struct IslandGlyph: View {
 
     public var body: some View {
         ZStack {
-            // The colour a real glass panel would let show through from beneath.
-            tile.fill(LinearGradient(colors: [Color(red: 0.2, green: 0.35, blue: 0.9), Color(red: 0.55, green: 0.25, blue: 0.85)],
+            // The island itself is solid black, not a colour — the tile underneath
+            // the glass matches that instead of an invented brand colour.
+            tile.fill(LinearGradient(colors: [Color(white: 0.22), Color(white: 0.08)],
                                      startPoint: .topLeading, endPoint: .bottomTrailing))
             // The frosted layer itself.
             tile.fill(.white.opacity(0.16))
