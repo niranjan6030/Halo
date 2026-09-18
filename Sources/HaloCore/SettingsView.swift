@@ -260,30 +260,20 @@ public struct SettingsView: View {
     }
 }
 
-/// The notch with an island growing out of it, used as the pane's icon art.
+/// The Halo wordmark on a rounded tile, used as the pane's icon art — the same
+/// identity as the logo in the README, not a separate glyph invented for Settings.
 public struct IslandGlyph: View {
     public init() {}
 
     public var body: some View {
-        ZStack(alignment: .top) {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+        ZStack {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(LinearGradient(colors: [Color(red: 0.2, green: 0.35, blue: 0.9), Color(red: 0.55, green: 0.25, blue: 0.85)],
                                      startPoint: .topLeading, endPoint: .bottomTrailing))
-            Capsule()
-                .fill(Color.black)
-                .frame(width: 62, height: 18)
-                .overlay(alignment: .leading) {
-                    Circle().fill(Color.pink.gradient).frame(width: 11, height: 11).padding(.leading, 5)
-                }
-                .overlay(alignment: .trailing) {
-                    HStack(spacing: 1.5) {
-                        ForEach([5.0, 9, 6, 8], id: \.self) { height in
-                            Capsule().fill(Color.pink).frame(width: 2, height: height)
-                        }
-                    }
-                    .padding(.trailing, 7)
-                }
-                .padding(.top, 6)
+            Text("Halo")
+                .font(.system(size: 25, weight: .semibold))
+                .tracking(-0.6)
+                .foregroundStyle(.white)
         }
     }
 }
