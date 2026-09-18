@@ -260,44 +260,30 @@ public struct SettingsView: View {
     }
 }
 
-/// The Halo wordmark on a Liquid Glass tile, used as the pane's icon art — the same
-/// identity as the logo in the README, not a separate glyph invented for Settings.
-/// This is rendered offscreen through `ImageRenderer` to bake a static PNG, where
-/// the real `.glassEffect()` API doesn't have a live window behind it to blur (the
-/// island's own card hierarchy disables it for the same reason during snapshots —
-/// see `IslandSurface`), so the frosted, glossy look is painted by hand instead.
+/// The Halo wordmark on black, used as the pane's icon art — the same identity as
+/// the logo in the README (same rounded weight, same gradient), not a separate
+/// glyph invented for Settings.
 public struct IslandGlyph: View {
     public init() {}
+
+    static let colors: [Color] = [
+        Color(red: 0.25, green: 0.42, blue: 1.0),
+        Color(red: 0.55, green: 0.35, blue: 0.98),
+        Color(red: 0.93, green: 0.32, blue: 0.68),
+        Color(red: 1.0, green: 0.55, blue: 0.25),
+    ]
 
     private var tile: RoundedRectangle { RoundedRectangle(cornerRadius: 14, style: .continuous) }
 
     public var body: some View {
         ZStack {
-            // The same indigo-to-rose gradient as the promo video's backdrop
-            // (Promo/stage.swift), so the icon and the video read as one thing.
-            tile.fill(LinearGradient(colors: [Color(red: 0.10, green: 0.07, blue: 0.20),
-                                              Color(red: 0.30, green: 0.12, blue: 0.38),
-                                              Color(red: 0.62, green: 0.30, blue: 0.36)],
-                                     startPoint: .topLeading, endPoint: .bottomTrailing))
-            // The frosted layer itself.
-            tile.fill(.white.opacity(0.16))
-            // A soft diagonal gloss, the highlight a curved glass surface catches.
-            tile.fill(LinearGradient(colors: [.white.opacity(0.6), .white.opacity(0)],
-                                     startPoint: .top, endPoint: .init(x: 0.3, y: 0.85)))
-                .blendMode(.plusLighter)
-            // A darker sweep low in the tile, the way glass reads thicker at its base.
-            tile.fill(LinearGradient(colors: [.clear, .black.opacity(0.16)],
-                                     startPoint: .center, endPoint: .bottom))
-            // The rim a glass panel's edge catches light on.
-            tile.strokeBorder(
-                LinearGradient(colors: [.white.opacity(0.75), .white.opacity(0.15)], startPoint: .top, endPoint: .bottom),
-                lineWidth: 1.4
-            )
+            // The island itself is solid black — the icon's background matches it
+            // rather than an invented brand colour.
+            tile.fill(Color.black)
             Text("Halo")
-                .font(.system(size: 25, weight: .semibold))
-                .tracking(-0.6)
-                .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.22), radius: 3, y: 1)
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .tracking(-0.8)
+                .foregroundStyle(LinearGradient(colors: Self.colors, startPoint: .leading, endPoint: .trailing))
         }
         .clipShape(tile)
     }

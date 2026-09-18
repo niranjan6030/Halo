@@ -1,7 +1,4 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-dark.png">
-  <img src=".github/assets/logo-light.png" alt="Halo" width="260">
-</picture>
+<img src=".github/assets/logo.png" alt="Halo" width="260">
 
 A Dynamic Island for the MacBook notch. It runs in the background with no Dock
 or menu bar icon, lives in the notch, and grows when something happens, like the
