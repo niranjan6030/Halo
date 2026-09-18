@@ -1,12 +1,7 @@
 .build/
 build/
 .DS_Store
-Promo/stage
-Promo/out/
-Promo/footage/
-Promo/final/
-Promo/shots/
-Promo/audio/
-Promo/Adobe Premiere Pro Auto-Save/
-Promo/*.prproj
-Promo/*.prin
+
+# Video-production tooling for the promo video — not needed to build or run
+# Halo, kept local only.
+Promo/

@@ -246,22 +246,46 @@ Accessibility and Bluetooth after every rebuild — expected, not a bug.
 
 ## Setup
 
+No Xcode, no App Store, no signing certificate — just the Command Line Tools and one
+script.
+
+1. **Open Terminal** (⌘Space, type "Terminal", press ↩).
+2. **Install the Command Line Tools**, if you haven't already:
+   ```bash
+   xcode-select --install
+   ```
+   Skip this if a dialog doesn't appear — it means you already have them.
+3. **Get the code and build it:**
+   ```bash
+   git clone https://github.com/niranjan6030/Halo.git
+   cd Halo
+   Scripts/build-app.sh install
+   ```
+   This compiles Halo with Swift Package Manager, installs `/Applications/Halo.app` and
+   `~/Library/PreferencePanes/Halo.prefPane` (its System Settings page), and launches it.
+   The first build takes a minute or two; the notch should come alive shortly after.
+4. **Allow the permissions Halo asks for.** It only asks the first time you actually use
+   a feature, never up front — see [Permissions](#permissions) below for what each one is
+   for. It's fine to click "Don't Allow" on anything you don't want; that feature just
+   stays off.
+5. **Open Halo's own settings** whenever you want to change something:
+   -  System Settings → scroll down the sidebar to **Halo** (near the bottom, below the
+      regular system panes) → click it.
+   -  Or right-click the island in the notch → **Halo Settings…**.
+
+   That's the whole interface — there's no separate Halo app window, menu bar icon, or
+   Dock icon to look for.
+
+That's it — nothing to configure before it works. Everything in [Moving around](#moving-around)
+and [Pages](#pages) above is optional, switched on from that same Settings page.
+
+Since the build is signed locally rather than notarized, macOS won't show a Gatekeeper
+warning for a version you build yourself this way (that warning is only for files
+downloaded through a browser). After pulling new changes, rebuild with:
 ```bash
-xcode-select --install   # skip if already installed
-git clone https://github.com/niranjan6030/Halo.git
-cd Halo
-Scripts/build-app.sh install
+cd Halo && git pull && Scripts/build-app.sh install
 ```
-
-This builds Halo with Swift Package Manager and installs `/Applications/Halo.app` and
-`~/Library/PreferencePanes/Halo.prefPane` (the System Settings page), then launches it —
-the notch should come alive within a few seconds. `Halo --snapshots <dir>` renders every
-state to PNGs if you just want to look without installing.
-
-Since the build is locally signed rather than notarized, macOS won't show a Gatekeeper
-warning for a version you build yourself this way (that only applies to files downloaded
-through a browser). To rebuild after pulling changes, just run
-`Scripts/build-app.sh install` again.
+Just want to look without installing? `Halo --snapshots <dir>` renders every state to PNGs.
 
 ### Uninstalling
 
