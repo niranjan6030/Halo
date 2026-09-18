@@ -260,20 +260,42 @@ public struct SettingsView: View {
     }
 }
 
-/// The Halo wordmark on a rounded tile, used as the pane's icon art — the same
+/// The Halo wordmark on a Liquid Glass tile, used as the pane's icon art — the same
 /// identity as the logo in the README, not a separate glyph invented for Settings.
+/// This is rendered offscreen through `ImageRenderer` to bake a static PNG, where
+/// the real `.glassEffect()` API doesn't have a live window behind it to blur (the
+/// island's own card hierarchy disables it for the same reason during snapshots —
+/// see `IslandSurface`), so the frosted, glossy look is painted by hand instead.
 public struct IslandGlyph: View {
     public init() {}
 
+    private var tile: RoundedRectangle { RoundedRectangle(cornerRadius: 14, style: .continuous) }
+
     public var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(LinearGradient(colors: [Color(red: 0.2, green: 0.35, blue: 0.9), Color(red: 0.55, green: 0.25, blue: 0.85)],
+            // The colour a real glass panel would let show through from beneath.
+            tile.fill(LinearGradient(colors: [Color(red: 0.2, green: 0.35, blue: 0.9), Color(red: 0.55, green: 0.25, blue: 0.85)],
                                      startPoint: .topLeading, endPoint: .bottomTrailing))
+            // The frosted layer itself.
+            tile.fill(.white.opacity(0.16))
+            // A soft diagonal gloss, the highlight a curved glass surface catches.
+            tile.fill(LinearGradient(colors: [.white.opacity(0.6), .white.opacity(0)],
+                                     startPoint: .top, endPoint: .init(x: 0.3, y: 0.85)))
+                .blendMode(.plusLighter)
+            // A darker sweep low in the tile, the way glass reads thicker at its base.
+            tile.fill(LinearGradient(colors: [.clear, .black.opacity(0.16)],
+                                     startPoint: .center, endPoint: .bottom))
+            // The rim a glass panel's edge catches light on.
+            tile.strokeBorder(
+                LinearGradient(colors: [.white.opacity(0.75), .white.opacity(0.15)], startPoint: .top, endPoint: .bottom),
+                lineWidth: 1.4
+            )
             Text("Halo")
                 .font(.system(size: 25, weight: .semibold))
                 .tracking(-0.6)
                 .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.22), radius: 3, y: 1)
         }
+        .clipShape(tile)
     }
 }
