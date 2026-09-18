@@ -23,11 +23,16 @@ final class CalendarMonitor: ObservableObject {
 
     @Published private(set) var next: Event?
     @Published private(set) var accessDenied = false
+    /// Fired once, right as a marked event's start time arrives — the notch alert.
+    var onEventStarting: ((Event) -> Void)?
 
     private let store = EKEventStore()
     private var timer: Timer?
     private var observer: NSObjectProtocol?
     private var isRunning = false
+    /// Start time of the last event we already alerted for, so a 30 s refresh tick
+    /// doesn't fire the same "starting now" alert repeatedly while it's running.
+    private var alertedStart: Date?
 
     func start() {
         guard !isRunning else { return }
@@ -95,6 +100,16 @@ final class CalendarMonitor: ObservableObject {
                   color: event.calendar.map { Color(nsColor: NSColor(cgColor: $0.cgColor) ?? .systemRed) } ?? .red)
         }
         if event != next { next = event }
+
+        // The marked event's start time has arrived: alert once, not on every tick
+        // while it keeps being the running event, and not for a meeting that was
+        // already well underway when Halo launched (or relaunched) — `alertedStart`
+        // starts out nil, so without the recency check the very first refresh during
+        // an ongoing meeting would read as "just started" and alert for it again.
+        if let event, event.isRunning, event.start != alertedStart, now.timeIntervalSince(event.start) < 35 {
+            alertedStart = event.start
+            onEventStarting?(event)
+        }
     }
 
     /// Looks for a video call link in the places apps put them.

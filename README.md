@@ -1,4 +1,7 @@
-# Halo
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-dark.png">
+  <img src=".github/assets/logo-light.png" alt="Halo" width="260">
+</picture>
 
 A Dynamic Island for the MacBook notch. It runs in the background with no Dock
 or menu bar icon, lives in the notch, and grows when something happens, like the
@@ -16,7 +19,7 @@ iPhone's. Its settings are a page in System Settings.
 
 ## Siri
 
-While Siri is up, Halo shows it in the notch the way iPhone does: a living Siri orb on the
+While Siri is up, Halo shows it in the notch: a glass orb in Siri's own colours on the
 left, a Siri waveform on the right that moves while Siri is listening, and the Apple
 Intelligence edge light running around the island. Click it to bring Siri forward.
 Ask Siri from Halo with the **Siri** button on the Controls page or **Ask Siri** in the
@@ -149,7 +152,7 @@ buttons bounce when pressed.
 Volume and brightness (replacing the macOS pop-ups), Caps Lock, charging, unplugging,
 low battery, Low Power Mode, AirPods and Bluetooth devices with battery, AirPlay and
 audio output changes, Wi-Fi / Personal Hotspot / Ethernet / no internet, AirDrop and
-finished downloads, screenshots.
+finished downloads, screenshots, and a marked event starting right now.
 
 ## The ⋯ menu
 
@@ -188,7 +191,7 @@ no permission.
 
 ## Clear app caches
 
-The sparkles icon on the control card frees storage by clearing `~/Library/Caches`. It
+The trash icon on the control card frees storage by clearing `~/Library/Caches`. It
 shows how much first and asks. It leaves alone the caches of apps that are open (matched
 by app ID, company folder like "Google", or app name), macOS services, and downloads like
 Playwright's browsers that you'd have to reinstall. System caches need an administrator
@@ -238,8 +241,7 @@ Accessibility and Bluetooth after every rebuild — expected, not a bug.
 ## Requirements
 
 - macOS 26 or later.
-- Apple silicon or Intel; Halo Intelligence (the on-device AI page) additionally needs a
-  Mac with Apple Intelligence turned on — everything else works without it.
+- Apple silicon or Intel.
 - Xcode Command Line Tools — no full Xcode install needed.
 
 ## Setup

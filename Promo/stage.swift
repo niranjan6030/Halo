@@ -6,7 +6,11 @@ let app = NSApplication.shared
 app.setActivationPolicy(.accessory)
 guard let screen = NSScreen.screens.first(where: { $0.safeAreaInsets.top > 0 }) ?? NSScreen.main else { exit(1) }
 let window = NSWindow(contentRect: screen.frame, styleMask: [.borderless], backing: .buffered, defer: false)
-window.level = .floating
+// .floating wasn't reliably winning against other apps' own floating-level windows
+// (e.g. a chat app that keeps itself on top). .screenSaver actually broke screen
+// recording outright (ScreenCaptureKit stopped mid-capture every time this backdrop
+// used it) — .statusBar is still well above normal app windows without that problem.
+window.level = .statusBar
 window.collectionBehavior = [.canJoinAllSpaces, .stationary]
 window.isOpaque = true
 let view = NSView(frame: screen.frame)

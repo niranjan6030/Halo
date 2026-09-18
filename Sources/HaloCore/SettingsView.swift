@@ -87,12 +87,6 @@ public struct SettingsView: View {
                 }
 
                 Section {
-                    row("Halo Intelligence", "sparkles", .purple, $settings.showHaloIntelligence)
-                } footer: {
-                    Text("An on-device assistant in the notch — press ⌥Space to ask it anything, or add the Ask Halo button to the Controls page. It runs entirely on this Mac using Apple Intelligence, so it needs that switched on in System Settings; nothing you ask leaves the device.")
-                }
-
-                Section {
                     row("Siri", "sparkles", .purple, $settings.showSiri)
                     row("Now Playing", "music.note", .pink, $settings.showNowPlaying)
                     row("Calls and recording", "phone.fill", .green, $settings.showCalls)

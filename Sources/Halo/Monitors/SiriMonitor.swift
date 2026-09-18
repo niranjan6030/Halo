@@ -3,6 +3,15 @@ import AppKit
 /// Follows Siri. macOS gives other apps no Siri API, but Siri becomes the active app
 /// while its window is up, so Halo can show Siri in the notch for exactly that long,
 /// and open Siri when asked.
+///
+/// This only catches Siri opened explicitly (menu bar, keyboard shortcut, or Halo's
+/// own trigger) — voice-triggered "Hey Siri" shows as a heads-up panel that macOS
+/// treats as protected system UI, the same class as Control Centre or a permission
+/// dialog: it never becomes the frontmost app, and it doesn't appear in the public
+/// window list either (confirmed: CGWindowListCopyWindowInfo reports zero windows
+/// owned by Siri even while its panel is visibly on screen). There is no public API
+/// this or any third-party app can use to observe it, so "Hey Siri" specifically
+/// can't be caught here.
 @MainActor
 final class SiriMonitor: ObservableObject {
     static let bundleID = "com.apple.Siri"

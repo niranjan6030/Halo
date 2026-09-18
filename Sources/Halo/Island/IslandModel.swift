@@ -39,8 +39,6 @@ enum ExpandedContent: Hashable {
     case mirror
     /// Tools for an image just dropped on the island.
     case smartDrop
-    /// Halo Intelligence: a question and its on-device answer.
-    case intelligence
 }
 
 /// Short-lived alerts that take over the island for a moment, then hand it back.
@@ -66,6 +64,8 @@ enum TransientEvent: Equatable {
     case copied(ClipboardItem)
     /// An action finished: shown with the Face ID-style checkmark.
     case success(text: String)
+    /// A marked calendar event's start time just arrived.
+    case eventStarting(title: String, color: Color)
 
     /// Updates of the same kind (volume 40% → 45%) keep the view in place and just
     /// animate the value, instead of cross-fading a new view in.
@@ -88,6 +88,7 @@ enum TransientEvent: Equatable {
         case .message: return "message"
         case .copied: return "copied"
         case .success: return "success"
+        case .eventStarting: return "eventStarting"
         }
     }
 
@@ -103,6 +104,7 @@ enum TransientEvent: Equatable {
         case .message: return 2
         case .copied: return 1.6
         case .success: return 2.2
+        case .eventStarting: return 6
         }
     }
 
@@ -287,7 +289,6 @@ final class IslandModel: ObservableObject {
     let lyrics = LyricsMonitor()
     let shortcuts = ShortcutsLibrary()
     let reminders = RemindersMonitor()
-    let intelligence = HaloIntelligenceController()
     let privacy: PrivacyMonitor
     let clipboard: ClipboardHistory
     let openSettings: () -> Void
@@ -359,15 +360,13 @@ final class IslandModel: ObservableObject {
                                                         weather.objectWillChange, privacy.objectWillChange,
                                                         clipboard.objectWillChange, focus.objectWillChange, toggles.objectWillChange,
                                                         timer.objectWillChange, stats.objectWillChange, siri.objectWillChange, fps.objectWillChange, reminders.objectWillChange,
-                                                        lyrics.objectWillChange, shortcuts.objectWillChange, intelligence.objectWillChange]
+                                                        lyrics.objectWillChange, shortcuts.objectWillChange]
         for publisher in publishers {
             publisher
                 .sink { [weak self] _ in self?.objectWillChange.send() }
                 .store(in: &cancellables)
         }
         observeContent()
-        intelligence.model = self
-        intelligence.onUpdate = { [weak self] in self?.keepIntelligenceOpen() }
         timer.onFinish = { [weak self] message, symbol in
             guard let self else { return }
             if self.settings.timerSound { NSSound(named: "Glass")?.play() }
@@ -395,27 +394,6 @@ final class IslandModel: ObservableObject {
             self.show(.success(text: "Reminder added"))
             return true
         }
-    }
-
-    /// Opens Halo Intelligence: the island shows the Siri-style orb while a floating
-    /// field below the notch takes the question, on-device, entirely on this Mac.
-    func beginIntelligence() {
-        guard HaloIntelligenceController.isAvailable else {
-            show(.message(text: HaloIntelligenceController.unavailableReason, symbol: "sparkles"))
-            return
-        }
-        dismissTransient()
-        intelligence.reset()
-        expand(.intelligence)
-        QuickEditor.shared.askHalo(below: belowNotch) { [weak self] text in
-            self?.intelligence.ask(text)
-        }
-    }
-
-    /// Keeps the Halo Intelligence card open while an answer is still streaming in.
-    func keepIntelligenceOpen(delay: TimeInterval = 8) {
-        guard expanded == .intelligence else { return }
-        scheduleCollapseIfNeeded(delay: delay)
     }
 
     /// Something the user asked to be told about (a timer ending, a reminder to rest):
@@ -636,7 +614,21 @@ final class IslandModel: ObservableObject {
             case .dropTarget: result = strip(side: 112)
             case .message: result = strip(side: 128)
             case .copied: result = strip(side: 84)
-            case .success: result = strip(side: 112)
+            case let .success(text):
+                // The message varies a lot in length ("Trash emptied" vs. "Caches are
+                // already tidy" vs. "Force quit 3 apps") — a fixed width truncated the
+                // longer ones. The text renders in CompactStrip's trailing region, which
+                // gets exactly `side` points with 4pt of trailing padding inside it, so
+                // side needs to cover the measured text width plus that padding.
+                let textWidth = (text as NSString).size(withAttributes: [
+                    .font: NSFont.systemFont(ofSize: 12, weight: .regular)
+                ]).width
+                result = strip(side: max(84, ceil(textWidth) + 10))
+            case let .eventStarting(title, _):
+                let textWidth = (title as NSString).size(withAttributes: [
+                    .font: NSFont.systemFont(ofSize: 12, weight: .semibold)
+                ]).width
+                result = strip(side: max(104, ceil(textWidth) + 34))
             case .screenshot: result = strip(side: 116)
             }
 
@@ -654,7 +646,6 @@ final class IslandModel: ObservableObject {
             case .reminders: result = card(width: 440, extra: 232 + navigationRoom(for: .reminders))
             case .notes: result = card(width: 440, extra: 170 + navigationRoom(for: .notes))
             case .smartDrop: result = card(width: 480, extra: 168)
-            case .intelligence: result = card(width: 460, extra: 210)
             case .mirror: result = card(width: 440, extra: 250 + navigationRoom(for: .mirror))
             }
         }
@@ -683,7 +674,6 @@ final class IslandModel: ObservableObject {
             switch action {
             case .clipboard: return settings.clipboardHistory
             case .nightShift: return toggles.canUseNightShift
-            case .askHalo: return HaloIntelligenceController.isAvailable
             default: return true
             }
         }
@@ -755,7 +745,6 @@ final class IslandModel: ObservableObject {
         case .siri:
             collapse()
             SiriMonitor.activate()
-        case .askHalo: beginIntelligence()
         case .notes: showPage(.notes)
         case .emptyTrash: emptyTrash()
         case .hiddenFiles: toggles.toggleHiddenFiles()
@@ -1008,7 +997,7 @@ final class IslandModel: ObservableObject {
     /// Clears app caches to free storage, after showing how much and asking.
     func clearCaches() {
         collapse()
-        show(.message(text: "Checking caches…", symbol: "sparkles"))
+        show(.message(text: "Checking caches…", symbol: "trash.fill"))
         let running = NSWorkspace.shared.runningApplications
         let ids = Set(running.compactMap(\.bundleIdentifier))
         var names: [String: String] = [:]
@@ -1045,12 +1034,12 @@ final class IslandModel: ObservableObject {
         NSApp.activate(ignoringOtherApps: true)
         guard alert.runModal() == .alertFirstButtonReturn else { return }
 
-        show(.message(text: "Clearing caches…", symbol: "sparkles"))
+        show(.message(text: "Clearing caches…", symbol: "trash.fill"))
         Task.detached(priority: .userInitiated) {
             let freed = CacheCleaner.clear(plan)
             await MainActor.run { [weak self] in
                 self?.dismissTransient()
-                self?.show(.success(text: "Freed \(CacheCleaner.format(freed))"))
+                self?.show(.success(text: "Cleaned up \(CacheCleaner.format(freed))"))
             }
         }
     }
@@ -1372,7 +1361,7 @@ final class IslandModel: ObservableObject {
         case .nowPlaying: return .nowPlaying
         case .calendar: return .calendar
         case .timer: return .timer
-        case .controls, .weather, .lyrics, .system, .reminders, .notes, .shortcuts, .mirror, .smartDrop, .intelligence: return nil
+        case .controls, .weather, .lyrics, .system, .reminders, .notes, .shortcuts, .mirror, .smartDrop: return nil
         }
     }
 

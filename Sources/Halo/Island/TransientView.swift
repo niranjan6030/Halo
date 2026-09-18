@@ -166,6 +166,12 @@ struct TransientView: View {
                     .padding(.trailing, 4)
             }
 
+        case let .eventStarting(title, color):
+            AlertStrip(notch: notch, side: side, topRadius: layout.topRadius,
+                       symbol: "calendar", tint: color, title: title) {
+                AlertValue(text: "Now", tint: color, opacity: 1)
+            }
+
         case let .copied(item):
             CompactStrip(notch: notch, side: side, topRadius: layout.topRadius) {
                 HStack(spacing: 7) {

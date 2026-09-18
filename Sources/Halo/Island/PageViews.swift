@@ -598,7 +598,7 @@ struct StorageTile: View {
         } label: {
             ControlTile(interactive: true) {
                 VStack(alignment: .leading, spacing: 0) {
-                    TileHeader(symbol: "internaldrive", tint: .white, title: "Storage", multicolor: false)
+                    TileHeader(symbol: "trash.fill", tint: .white, title: "Storage", multicolor: false)
                     Spacer(minLength: 0)
                     Text(SystemStats.bytes(snapshot.diskFree))
                         .font(.system(size: 22, weight: .semibold, design: .rounded).monospacedDigit())

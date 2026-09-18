@@ -23,26 +23,13 @@ final class QuickEditor {
         }
     }
 
-    /// The field for Halo Intelligence. Submitting closes the field but leaves the
-    /// island's own card open — that's where the answer streams in.
-    func askHalo(below anchor: CGRect, submit: @escaping (String) -> Void) {
-        show(title: "Ask Halo", anchor: anchor, size: CGSize(width: 420, height: 60), borderless: true) { close in
-            AskHaloView(submit: { text in
-                close()
-                submit(text)
-            }, cancel: close)
-        }
-    }
-
     private func show<Content: View>(title: String, anchor: CGRect, size: CGSize,
-                                     borderless: Bool = false,
                                      @ViewBuilder content: (_ close: @escaping () -> Void) -> Content) {
         close()
         let frontmost = NSWorkspace.shared.frontmostApplication
         if frontmost?.bundleIdentifier != Bundle.main.bundleIdentifier { previousApp = frontmost }
 
-        let panel: NSPanel = borderless ? BorderlessEditorPanel(contentRect: CGRect(origin: .zero, size: size))
-                                        : EditorPanel(contentRect: CGRect(origin: .zero, size: size))
+        let panel = EditorPanel(contentRect: CGRect(origin: .zero, size: size))
         panel.title = title
         let root = content { [weak self] in self?.close(returnFocus: true) }
         panel.contentView = NSHostingView(rootView: root.frame(width: size.width, height: size.height))
@@ -64,59 +51,6 @@ final class QuickEditor {
         panel.orderOut(nil)
         self.panel = nil
         if returnFocus { previousApp?.activate() }
-    }
-}
-
-private struct AskHaloView: View {
-    let submit: (String) -> Void
-    let cancel: () -> Void
-    @State private var text = ""
-    @FocusState private var focused: Bool
-
-    var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(SiriColors.all[1])
-            TextField("Ask Halo…", text: $text)
-                .textFieldStyle(.plain)
-                .font(.system(size: 15))
-                .focused($focused)
-                .onSubmit {
-                    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                    guard !trimmed.isEmpty else { return }
-                    submit(trimmed)
-                }
-        }
-        .padding(.horizontal, 16)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(AngularGradient(colors: SiriColors.all, center: .center), lineWidth: 1.3)
-                .opacity(0.75)
-        }
-        .onAppear { focused = true }
-    }
-}
-
-private final class BorderlessEditorPanel: NSPanel {
-    init(contentRect: CGRect) {
-        super.init(contentRect: contentRect, styleMask: [.borderless, .fullSizeContentView], backing: .buffered, defer: false)
-        isMovableByWindowBackground = true
-        level = .floating
-        isReleasedWhenClosed = false
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        backgroundColor = .clear
-        isOpaque = false
-        hasShadow = true
-    }
-
-    override var canBecomeKey: Bool { true }
-
-    override func cancelOperation(_ sender: Any?) {
-        QuickEditor.shared.close(returnFocus: true)
     }
 }
 

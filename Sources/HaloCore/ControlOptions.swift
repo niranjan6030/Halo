@@ -49,7 +49,7 @@ public enum ControlAction: String, CaseIterable, Identifiable, Sendable {
     // One-shot actions.
     case clipboard, clearClipboard, screenshot, colorPicker, airDrop, showDesktop, missionControl, apps
     case calculator, activityMonitor, speedTest, copyIP
-    case siri, askHalo, timer, notes, lockScreen, sleepDisplay, sleep, restart, shutDown, ejectDisks, emptyTrash
+    case siri, timer, notes, lockScreen, sleepDisplay, sleep, restart, shutDown, ejectDisks, emptyTrash
     case clearCaches, forceQuit, weather, settings
 
     public var id: String { rawValue }
@@ -66,7 +66,6 @@ public enum ControlAction: String, CaseIterable, Identifiable, Sendable {
         case .bluetooth: return "Bluetooth"
         case .dockAutohide: return "Hide Dock"
         case .siri: return "Siri"
-        case .askHalo: return "Ask Halo"
         case .timer: return "Timer"
         case .notes: return "Quick Note"
         case .emptyTrash: return "Empty Trash"
@@ -110,7 +109,6 @@ public enum ControlAction: String, CaseIterable, Identifiable, Sendable {
         case .bluetooth: return "dot.radiowaves.left.and.right"
         case .dockAutohide: return "dock.rectangle"
         case .siri: return "sparkles.rectangle.stack"
-        case .askHalo: return "sparkles"
         case .timer: return "timer"
         case .notes: return "note.text"
         case .emptyTrash: return "trash"
@@ -135,7 +133,7 @@ public enum ControlAction: String, CaseIterable, Identifiable, Sendable {
         case .sleepDisplay: return "display"
         case .sleep: return "powersleep"
         case .ejectDisks: return "eject.fill"
-        case .clearCaches: return "sparkles"
+        case .clearCaches: return "trash.fill"
         case .forceQuit: return "xmark"
         case .weather: return "cloud.sun.fill"
         case .settings: return "gearshape.fill"

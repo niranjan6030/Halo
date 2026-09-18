@@ -58,9 +58,6 @@ struct IslandView: View {
             .offset(x: layout.offsetX)
             .contextMenu {
                 Button("Ask Siri") { SiriMonitor.activate() }
-                if HaloIntelligenceController.isAvailable {
-                    Button("Ask Halo") { model.beginIntelligence() }
-                }
                 Button("Halo Settings…") { model.openSettings() }
                 if model.settings.clipboardHistory {
                     Button("Open Clipboard") { model.openClipboard() }
@@ -128,7 +125,6 @@ struct IslandView: View {
             case .notes: NotesPageView(model: model)
             case .mirror: MirrorPageView(model: model)
             case .smartDrop: SmartDropView(model: model)
-            case .intelligence: HaloIntelligenceView(model: model)
             }
         }
     }
@@ -319,7 +315,7 @@ struct CompactActivityView: View {
                 TimerRing(timer: model.timer, date: context.date, size: small ? 13 : 16)
             }
         case .siri:
-            SiriOrb(size: min(notch.height - 8, room - 6), listening: model.privacy.microphoneInUse)
+            SiriLogo(size: min(notch.height - 8, room - 6), listening: model.privacy.microphoneInUse)
         case .download:
             DownloadRing(progress: model.downloadProgress, size: small ? 15 : 18)
         case .privacy:
@@ -378,6 +374,8 @@ struct CompactActivityView: View {
                 .foregroundStyle(timer.isRunning ? Color.orange : Color.white.opacity(0.6))
             }
         case .siri:
+            // The logo (leading side) is the identity; this is just a small "it's
+            // listening" pulse — showing the same logo twice would look redundant.
             SiriWave(listening: model.privacy.microphoneInUse)
         case .download:
             if let progress = model.downloadProgress {

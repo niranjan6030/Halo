@@ -92,11 +92,6 @@ final class IslandController {
         self?.model.toggleFromShortcut()
     }
 
-    /// ⌥Space opens Halo Intelligence — the on-device assistant — from anywhere.
-    private lazy var intelligenceHotKey = GlobalHotKey(keyCode: 49, modifiers: 2048) { [weak self] in
-        self?.model.beginIntelligence()
-    }
-
     private var scrollRemainder: CGFloat = 0
 
     /// Scrolling over the compact island changes the volume, a notch at a time.
@@ -239,6 +234,10 @@ final class IslandController {
                 self.model.announce(minutes <= 1 ? "Rain starting now" : "Rain starting in \(minutes) min", symbol: "cloud.rain.fill")
             }
             .store(in: &cancellables)
+        calendar.onEventStarting = { [weak self] event in
+            guard let self, self.settings.showCalendar else { return }
+            self.model.show(.eventStarting(title: event.title, color: event.color))
+        }
         downloads.onProgress = { [weak self] progress in
             self?.model.updateDownload(progress)
         }
@@ -379,13 +378,10 @@ final class IslandController {
                 }
             }
         case "demo.rain": model.announce("Rain starting in 15 min", symbol: "cloud.rain.fill")
+        case "demo.eventStarting": model.show(.eventStarting(title: "Design Review", color: .red))
         case "demo.siri": SiriMonitor.activate()
         case "demo.siriClose":
             NSWorkspace.shared.runningApplications.first { $0.bundleIdentifier == "com.apple.finder" }?.activate()
-        case "demo.askHalo":
-            model.intelligence.reset()
-            model.expand(.intelligence)
-            model.intelligence.ask(value ? "Set a timer for 2 minutes" : "What's my battery percentage and is Dark Mode on?")
         case "demo.collapse":
             model.dismissTransient()
             model.collapse()
@@ -468,11 +464,6 @@ final class IslandController {
         toggle(clipboard.start, clipboard.stop, settings.clipboardHistory)
         clipboard.copiesScreenshots = settings.copyScreenshots
         if !islandHotKey.register() { islandLog.error("couldn't register ⌃⌘H") }
-        if settings.showHaloIntelligence && HaloIntelligenceController.isAvailable {
-            if !intelligenceHotKey.register() { islandLog.error("couldn't register ⌥Space") }
-        } else {
-            intelligenceHotKey.unregister()
-        }
         ScreenshotLocation.apply(keepOffDesktop: settings.clipboardHistory && settings.screenshotsOffDesktop)
         if settings.clipboardHistory {
             if !clipboardHotKey.register() { islandLog.error("couldn't register ⌃⌘V") }
@@ -629,7 +620,6 @@ final class IslandController {
         clipboard.stop()
         clipboardHotKey.unregister()
         islandHotKey.unregister()
-        intelligenceHotKey.unregister()
         network.stop()
         downloads.stop()
         mediaKeys.stop()
