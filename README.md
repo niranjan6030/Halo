@@ -249,7 +249,7 @@ Accessibility and Bluetooth after every rebuild — expected, not a bug.
 No Xcode, no App Store, no signing certificate — just the Command Line Tools and one
 script.
 
-1. **Open Terminal** (⌘Space, type "Terminal", press ).
+1. **Open Terminal** (⌘Space, type "Terminal", press Enter ).
 2. **Install the Command Line Tools**, if you haven't already:
    ```bash
    xcode-select --install
