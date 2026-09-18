@@ -47,7 +47,6 @@ public final class Settings: ObservableObject {
     @Published public var showCapsLock: Bool { didSet { store(showCapsLock, .showCapsLock) } }
     @Published public var showPrivacy: Bool { didSet { store(showPrivacy, .showPrivacy) } }
     @Published public var showCalendar: Bool { didSet { store(showCalendar, .showCalendar) } }
-    @Published public var showSiri: Bool { didSet { store(showSiri, .showSiri) } }
     @Published public var rainAlerts: Bool { didSet { store(rainAlerts, .rainAlerts) } }
     @Published public var showWeather: Bool { didSet { store(showWeather, .showWeather) } }
     @Published public var hideInFullScreen: Bool { didSet { store(hideInFullScreen, .hideInFullScreen) } }
@@ -93,7 +92,7 @@ public final class Settings: ObservableObject {
         case showNetwork, showDownloads, showCapsLock, showPrivacy, showCalendar, showWeather, hideInFullScreen
         case weatherCity, clipboardHistory, showCopiedInIsland
         case controlsLeftTile, controlsRightTile, controlsButtons, showVolumeSlider, idlePage, avoidMenuBarIcons
-        case showSiri, rainAlerts, extraPages, eyeBreaks, hydrationReminders, timerSound, copyScreenshots, screenshotsOffDesktop
+        case rainAlerts, extraPages, eyeBreaks, hydrationReminders, timerSound, copyScreenshots, screenshotsOffDesktop
     }
 
     private init() {
@@ -126,7 +125,6 @@ public final class Settings: ObservableObject {
             Key.showCapsLock.rawValue: true,
             Key.showPrivacy.rawValue: true,
             Key.showCalendar.rawValue: false,
-            Key.showSiri.rawValue: true,
             Key.rainAlerts.rawValue: true,
             Key.showWeather.rawValue: false,
             Key.hideInFullScreen.rawValue: true,
@@ -166,7 +164,6 @@ public final class Settings: ObservableObject {
         showCapsLock = defaults.bool(forKey: Key.showCapsLock.rawValue)
         showPrivacy = defaults.bool(forKey: Key.showPrivacy.rawValue)
         showCalendar = defaults.bool(forKey: Key.showCalendar.rawValue)
-        showSiri = defaults.bool(forKey: Key.showSiri.rawValue)
         rainAlerts = defaults.bool(forKey: Key.rainAlerts.rawValue)
         showWeather = defaults.bool(forKey: Key.showWeather.rawValue)
         hideInFullScreen = defaults.bool(forKey: Key.hideInFullScreen.rawValue)
@@ -283,7 +280,6 @@ public final class Settings: ObservableObject {
         case .showCapsLock: assign(\.showCapsLock)
         case .showPrivacy: assign(\.showPrivacy)
         case .showCalendar: assign(\.showCalendar)
-        case .showSiri: assign(\.showSiri)
         case .rainAlerts: assign(\.rainAlerts)
         case .showWeather: assign(\.showWeather)
         case .hideInFullScreen: assign(\.hideInFullScreen)

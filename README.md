@@ -14,18 +14,6 @@ iPhone's. Its settings are a page in System Settings.
   and stays there as a dot while the first one is expanded.
 - **Alerts**: short pop-ups that take over for a moment, then hand the island back.
 
-## Siri
-
-While Siri is up, Halo shows it in the notch: a glass orb in Siri's own colours on the
-left, a Siri waveform on the right that moves while Siri is listening, and the Apple
-Intelligence edge light running around the island. Click it to bring Siri forward.
-Ask Siri from Halo with the **Siri** button on the Controls page or **Ask Siri** in the
-island's right-click menu.
-
-Siri does all the answering, so everything Siri can do works as usual. macOS gives other apps
-no access to what you say to Siri or what it answers, so those stay in Siri's own window;
-Halo follows when Siri opens and closes (Siri becomes the active app while it's up).
-
 ## Smart Drop
 
 Drop an image on the notch and Halo opens with tools that run entirely on your Mac

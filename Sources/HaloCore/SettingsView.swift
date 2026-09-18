@@ -85,7 +85,6 @@ public struct SettingsView: View {
                 }
 
                 Section {
-                    siriRow("Siri", $settings.showSiri)
                     row("Now Playing", "music.note", .pink, $settings.showNowPlaying)
                     row("Calls and recording", "phone.fill", .green, $settings.showCalls)
                     row("Camera and microphone indicators", "record.circle", .green, $settings.showPrivacy)
@@ -257,39 +256,6 @@ public struct SettingsView: View {
         }
     }
 
-    /// Apple's own Siri icon, not a symbol standing in for it — it's already a
-    /// finished piece of art with its own colour and gloss, so it needs no tinted
-    /// tile behind it the way the SF Symbol rows do.
-    private func siriRow(_ title: String, _ binding: Binding<Bool>) -> some View {
-        Toggle(isOn: binding) {
-            HStack(spacing: 10) {
-                Group {
-                    if let image = Self.siriIcon {
-                        Image(nsImage: image).resizable().scaledToFit()
-                    } else {
-                        Image(systemName: "sparkles.rectangle.stack")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 22, height: 22)
-                            .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Color.purple.gradient))
-                    }
-                }
-                .frame(width: 22, height: 22)
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                Text(title)
-            }
-        }
-    }
-
-    /// `Bundle(for:)` on a class defined in HaloCore resolves to whichever binary
-    /// actually contains that code — the app itself when HaloCore is linked into
-    /// Halo.app, or Halo.prefPane when it's compiled straight into the pane's own
-    /// bundle (see Scripts/build-app.sh) — so this finds the icon in both places
-    /// without needing to know which context it's running in.
-    private static let siriIcon: NSImage? = {
-        guard let url = Bundle(for: Settings.self).url(forResource: "SiriIcon", withExtension: "png") else { return nil }
-        return NSImage(contentsOf: url)
-    }()
 }
 
 /// The Halo wordmark on black, used as the pane's icon art — the same identity as

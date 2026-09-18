@@ -42,13 +42,6 @@ struct IslandView: View {
                         .padding(2)
                 }
             }
-            .background {
-                if case .compact(.siri, _) = presentation {
-                    SiriGlow(cornerRadius: layout.bottomRadius)
-                        .frame(width: layout.size.width, height: layout.size.height)
-                        .transition(.opacity.animation(.easeInOut(duration: 0.35)))
-                }
-            }
             .scaleEffect(model.isPressed ? 0.95 : 1, anchor: .top)
             .animation(.spring(response: 0.28, dampingFraction: 0.7), value: model.isPressed)
             .contentShape(Rectangle())
@@ -57,7 +50,6 @@ struct IslandView: View {
             .modifier(ShelfDropTarget(model: model))
             .offset(x: layout.offsetX)
             .contextMenu {
-                Button("Ask Siri") { SiriMonitor.activate() }
                 Button("Halo Settings…") { model.openSettings() }
                 if model.settings.clipboardHistory {
                     Button("Open Clipboard") { model.openClipboard() }
@@ -314,8 +306,6 @@ struct CompactActivityView: View {
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 TimerRing(timer: model.timer, date: context.date, size: small ? 13 : 16)
             }
-        case .siri:
-            SiriLogo(size: min(notch.height - 8, room - 6), listening: model.privacy.microphoneInUse)
         case .download:
             DownloadRing(progress: model.downloadProgress, size: small ? 15 : 18)
         case .privacy:
@@ -373,10 +363,6 @@ struct CompactActivityView: View {
                 }
                 .foregroundStyle(timer.isRunning ? Color.orange : Color.white.opacity(0.6))
             }
-        case .siri:
-            // The logo (leading side) is the identity; this is just a small "it's
-            // listening" pulse — showing the same logo twice would look redundant.
-            SiriWave(listening: model.privacy.microphoneInUse)
         case .download:
             if let progress = model.downloadProgress {
                 Text(progress.fraction.map { "\(Int(($0 * 100).rounded()))%" } ?? SystemStats.rate(progress.bytesPerSecond))
@@ -430,8 +416,6 @@ struct MinimalView: View {
                 TimelineView(.periodic(from: .now, by: 1)) { context in
                     TimerRing(timer: model.timer, date: context.date, size: 18)
                 }
-            case .siri:
-                SiriOrb(size: 20, listening: model.privacy.microphoneInUse)
             case .download:
                 DownloadRing(progress: model.downloadProgress, size: 18)
             case .privacy:

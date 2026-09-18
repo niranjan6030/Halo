@@ -49,7 +49,7 @@ public enum ControlAction: String, CaseIterable, Identifiable, Sendable {
     // One-shot actions.
     case clipboard, clearClipboard, screenshot, colorPicker, airDrop, showDesktop, missionControl, apps
     case calculator, activityMonitor, speedTest, copyIP
-    case siri, timer, notes, lockScreen, sleepDisplay, sleep, restart, shutDown, ejectDisks, emptyTrash
+    case timer, notes, lockScreen, sleepDisplay, sleep, restart, shutDown, ejectDisks, emptyTrash
     case clearCaches, forceQuit, weather, settings
 
     public var id: String { rawValue }
@@ -65,7 +65,6 @@ public enum ControlAction: String, CaseIterable, Identifiable, Sendable {
         case .wifi: return "Wi-Fi"
         case .bluetooth: return "Bluetooth"
         case .dockAutohide: return "Hide Dock"
-        case .siri: return "Siri"
         case .timer: return "Timer"
         case .notes: return "Quick Note"
         case .emptyTrash: return "Empty Trash"
@@ -108,7 +107,6 @@ public enum ControlAction: String, CaseIterable, Identifiable, Sendable {
         case .wifi: return "wifi"
         case .bluetooth: return "dot.radiowaves.left.and.right"
         case .dockAutohide: return "dock.rectangle"
-        case .siri: return "sparkles.rectangle.stack"
         case .timer: return "timer"
         case .notes: return "note.text"
         case .emptyTrash: return "trash"

@@ -45,7 +45,6 @@ enum Snapshots {
         states.append(("22-controls", { $0.expand(.controls) }))
         states.append(("23-weather", { $0.expand(.weather) }))
         states.append(("24-timer", { $0.expand(.timer) }))
-        states.append(("32-siri", { $0.siri.preview(true) }))
         states.append(("25-timer-running", { $0.timer.startPomodoro(); $0.expand(.timer) }))
         states.append(("26-system", { $0.expand(.system) }))
         states.append(("27-notes", { $0.expand(.notes) }))

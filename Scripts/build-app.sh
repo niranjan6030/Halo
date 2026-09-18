@@ -26,12 +26,6 @@ BIN_DIR="$(swift build -c release --show-bin-path)"
 
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN_DIR/Halo" "$APP/Contents/MacOS/Halo"
-# Loaded via Bundle(for: Settings.self), not SwiftPM's Bundle.module — its generated
-# accessor expects the resource bundle at the app bundle's TOP level, which codesign
-# then rejects as "unsealed contents present in the bundle root". Plain
-# Contents/Resources is the normal, codesign-safe place for a bundled asset, and it
-# needs to be in both the app and the pane since HaloCore's Settings UI runs in either.
-cp "$ROOT/Sources/Halo/Resources/SiriIcon.png" "$APP/Contents/Resources/SiriIcon.png"
 
 echo "Building now-playing helper…"
 clang -dynamiclib -fobjc-arc -O2 -Wall -Werror \
@@ -80,7 +74,6 @@ codesign --force --deep --sign - "$APP"
 
 echo "Building System Settings page…"
 mkdir -p "$PANE/Contents/MacOS" "$PANE/Contents/Resources"
-cp "$ROOT/Sources/Halo/Resources/SiriIcon.png" "$PANE/Contents/Resources/SiriIcon.png"
 # A preference pane is a loadable bundle, so it is linked directly with swiftc
 # rather than as a SwiftPM dylib. It shares HaloCore's sources with the app.
 # Compiled as one module, so the pane's `import HaloCore` is dropped.

@@ -8,8 +8,6 @@ let islandLog = Logger(subsystem: "com.niranjan.Halo", category: "island")
 
 /// Ongoing things the island shows in compact form, most important first.
 enum Activity: Hashable, CaseIterable {
-    /// Siri is up: shown ahead of everything, like on iPhone.
-    case siri
     case call
     case screenRecording
     case recording
@@ -171,7 +169,6 @@ final class IslandModel: ObservableObject {
     let weather: WeatherMonitor
     let focus = FocusController()
     let toggles = SystemToggles()
-    let siri = SiriMonitor()
     @Published private(set) var isTestingSpeed = false
     @Published private(set) var downloadProgress: DownloadProgress?
 
@@ -359,7 +356,7 @@ final class IslandModel: ObservableObject {
         let publishers: [ObservableObjectPublisher] = [settings.objectWillChange, nowPlaying.objectWillChange, calendar.objectWillChange,
                                                         weather.objectWillChange, privacy.objectWillChange,
                                                         clipboard.objectWillChange, focus.objectWillChange, toggles.objectWillChange,
-                                                        timer.objectWillChange, stats.objectWillChange, siri.objectWillChange, fps.objectWillChange, reminders.objectWillChange,
+                                                        timer.objectWillChange, stats.objectWillChange, fps.objectWillChange, reminders.objectWillChange,
                                                         lyrics.objectWillChange, shortcuts.objectWillChange]
         for publisher in publishers {
             publisher
@@ -497,12 +494,10 @@ final class IslandModel: ObservableObject {
         case .nowPlaying: return settings.showNowPlaying && nowPlaying.isVisible && nowPlaying.track != nil
         case .calendar: return settings.showCalendar && calendar.next != nil
         case .timer: return timer.isActive
-        case .siri: return settings.showSiri && siri.isActive
         case .download: return settings.showDownloads && downloadProgress != nil
         case .privacy:
             // A call or recording already accounts for the microphone.
             return settings.showPrivacy && privacy.isActive && privacy.call == nil && privacy.recording == nil
-                && !(settings.showSiri && siri.isActive)
         }
     }
 
@@ -551,7 +546,6 @@ final class IslandModel: ObservableObject {
         case .call, .recording, .screenRecording, .calendar: wanted = notchSize.height + 42
         case .nowPlaying: wanted = compactSide
         case .timer: wanted = notchSize.height + 30
-        case .siri: wanted = notchSize.height + 12
         case .download: wanted = notchSize.height + 36
         case .privacy: wanted = 24
         }
@@ -742,9 +736,6 @@ final class IslandModel: ObservableObject {
                 self?.announce("Allow Halo to control System Events", symbol: "exclamationmark.triangle.fill")
             }
         case .timer: showPage(.timer)
-        case .siri:
-            collapse()
-            SiriMonitor.activate()
         case .notes: showPage(.notes)
         case .emptyTrash: emptyTrash()
         case .hiddenFiles: toggles.toggleHiddenFiles()
@@ -1120,7 +1111,7 @@ final class IslandModel: ObservableObject {
         case let .compact(activity, _):
             // The camera and microphone dots are an indicator, not something to open.
             guard activity != .privacy else { return }
-            if activity == .siri || activity == .download {
+            if activity == .download {
                 _ = openApp(for: activity)
                 return
             }
@@ -1330,9 +1321,6 @@ final class IslandModel: ObservableObject {
         case .calendar:
             calendar.openInCalendar()
             return true
-        case .siri:
-            SiriMonitor.activate()
-            return true
         case .download:
             NSWorkspace.shared.open(FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads"))
             return true
@@ -1349,7 +1337,7 @@ final class IslandModel: ObservableObject {
         case .nowPlaying: return .nowPlaying
         case .calendar: return .calendar
         case .timer: return .timer
-        case .siri, .privacy, .download: return .controls
+        case .privacy, .download: return .controls
         }
     }
 

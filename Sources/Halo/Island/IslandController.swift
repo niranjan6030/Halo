@@ -379,9 +379,6 @@ final class IslandController {
             }
         case "demo.rain": model.announce("Rain starting in 15 min", symbol: "cloud.rain.fill")
         case "demo.eventStarting": model.show(.eventStarting(title: "Design Review", color: .red))
-        case "demo.siri": SiriMonitor.activate()
-        case "demo.siriClose":
-            NSWorkspace.shared.runningApplications.first { $0.bundleIdentifier == "com.apple.finder" }?.activate()
         case "demo.collapse":
             model.dismissTransient()
             model.collapse()
@@ -458,7 +455,6 @@ final class IslandController {
         toggle(bluetooth.start, bluetooth.stop, settings.showBluetooth)
         toggle(privacy.start, privacy.stop, settings.showPrivacy || settings.showCalls)
         toggle(calendar.start, calendar.stop, settings.showCalendar)
-        toggle(model.siri.start, model.siri.stop, settings.showSiri)
         wellness.update(eyeBreaks: settings.eyeBreaks, water: settings.hydrationReminders)
         toggle(weather.start, weather.stop, settings.usesWeather)
         toggle(clipboard.start, clipboard.stop, settings.clipboardHistory)
