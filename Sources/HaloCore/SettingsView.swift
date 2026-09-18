@@ -273,9 +273,11 @@ public struct IslandGlyph: View {
 
     public var body: some View {
         ZStack {
-            // The island itself is solid black, not a colour — the tile underneath
-            // the glass matches that instead of an invented brand colour.
-            tile.fill(LinearGradient(colors: [Color(white: 0.22), Color(white: 0.08)],
+            // The same indigo-to-rose gradient as the promo video's backdrop
+            // (Promo/stage.swift), so the icon and the video read as one thing.
+            tile.fill(LinearGradient(colors: [Color(red: 0.10, green: 0.07, blue: 0.20),
+                                              Color(red: 0.30, green: 0.12, blue: 0.38),
+                                              Color(red: 0.62, green: 0.30, blue: 0.36)],
                                      startPoint: .topLeading, endPoint: .bottomTrailing))
             // The frosted layer itself.
             tile.fill(.white.opacity(0.16))
