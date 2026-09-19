@@ -6,10 +6,6 @@ iPhone's. Its settings are a page in System Settings.
 
 ## A look at it
 
-<img src=".github/assets/promo-preview.gif" alt="Halo in the notch" width="760">
-
-[Watch the full film](.github/assets/halo-promo.mp4) (50s, with sound).
-
 Now Playing, with the controls in reach as soon as the island opens.
 
 <img src=".github/assets/screenshots/now-playing.png" alt="Now Playing in the notch" width="640">
@@ -43,6 +39,11 @@ a phone number offers to call it.
 Alerts take the island over for a moment, then give it back.
 
 <img src=".github/assets/screenshots/alerts.png" alt="AirPods connected alert" width="560">
+
+Every switch lives in System Settings, where the rest of your Mac's settings are —
+not in a menu bar icon or a window of its own.
+
+<img src=".github/assets/screenshots/settings.png" alt="Halo's page in System Settings" width="620">
 
 ## States
 
