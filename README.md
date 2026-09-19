@@ -4,6 +4,44 @@ A Dynamic Island for the MacBook notch. It runs in the background with no Dock
 or menu bar icon, lives in the notch, and grows when something happens, like the
 iPhone's. Its settings are a page in System Settings.
 
+## A look at it
+
+https://github.com/niranjan6030/Halo/raw/main/.github/assets/halo-promo.mp4
+
+Now Playing, with the controls in reach as soon as the island opens.
+
+<img src=".github/assets/screenshots/now-playing.png" alt="Now Playing in the notch" width="640">
+
+Lyrics, scrolling in time with the track.
+
+<img src=".github/assets/screenshots/lyrics.png" alt="Synced lyrics" width="640">
+
+Control Center — volume, brightness, media and shortcuts — without leaving the notch.
+
+<img src=".github/assets/screenshots/control-center.png" alt="Control Center in the notch" width="640">
+
+What your Mac is doing: CPU, memory, storage, network, battery health and uptime.
+
+<img src=".github/assets/screenshots/system-stats.png" alt="System stats" width="640">
+
+Weather, with the hours ahead and the next few days.
+
+<img src=".github/assets/screenshots/weather.png" alt="Weather" width="640">
+
+Smart Drop: drop an image on the notch and work on it right there — background
+removal, QR codes, text, format conversion, AirDrop. All of it on-device.
+
+<img src=".github/assets/screenshots/smart-drop.png" alt="Smart Drop" width="640">
+
+Clipboard history, searchable, with actions it works out from what you copied —
+a phone number offers to call it.
+
+<img src=".github/assets/screenshots/clipboard.png" alt="Clipboard history with smart actions" width="760">
+
+Alerts take the island over for a moment, then give it back.
+
+<img src=".github/assets/screenshots/alerts.png" alt="AirPods connected alert" width="560">
+
 ## States
 
 - **Compact**: content either side of the notch (artwork and waveform, a call timer).
