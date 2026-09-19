@@ -6,7 +6,9 @@ iPhone's. Its settings are a page in System Settings.
 
 ## A look at it
 
-https://github.com/niranjan6030/Halo/raw/main/.github/assets/halo-promo.mp4
+<img src=".github/assets/promo-preview.gif" alt="Halo in the notch" width="760">
+
+[Watch the full film](.github/assets/halo-promo.mp4) (50s, with sound).
 
 Now Playing, with the controls in reach as soon as the island opens.
 
