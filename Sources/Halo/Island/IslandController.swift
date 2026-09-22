@@ -163,6 +163,13 @@ final class IslandController {
             MainActor.assumeIsolated { self?.applySettings() }
         })
         let workspace = NSWorkspace.shared.notificationCenter
+        // Moving between Spaces is the moment the island is most likely to have been
+        // left behind — the new Space may or may not hold a full-screen app, and macOS
+        // does not always carry a borderless panel across on its own.
+        observers.append(workspace.addObserver(forName: NSWorkspace.activeSpaceDidChangeNotification,
+                                               object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.trackFullScreen() }
+        })
         observers.append(workspace.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated {
                 // Audio devices, displays and event taps can all change across sleep; start fresh.
@@ -744,12 +751,17 @@ final class IslandController {
     private func trackFullScreen() {
         guard let screen = targetScreen()?.screen else { return }
         let fullScreen = settings.hideInFullScreen && FullScreenMonitor.isFullScreen(on: screen)
-        guard fullScreen != model.isFullScreen else { return }
-        islandLog.notice("full screen \(fullScreen, privacy: .public)")
-        model.setFullScreen(fullScreen)
+        if fullScreen != model.isFullScreen {
+            islandLog.notice("full screen \(fullScreen, privacy: .public)")
+            model.setFullScreen(fullScreen)
+        }
+        // Enforce the window state every time rather than only when the flag flips.
+        // Switching Spaces, waking, and a full-screen app closing can all leave the
+        // panel ordered out behind our back; with a change-only check nothing ever
+        // brought it back and the island stayed gone until the app was relaunched.
         if fullScreen {
-            panel.orderOut(nil)
-        } else {
+            if panel.isVisible { panel.orderOut(nil) }
+        } else if !panel.isVisible {
             panel.orderFrontRegardless()
         }
     }

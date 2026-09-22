@@ -365,7 +365,14 @@ struct CompactActivityView: View {
             }
         case .download:
             if let progress = model.downloadProgress {
-                Text(progress.fraction.map { "\(Int(($0 * 100).rounded()))%" } ?? SystemStats.rate(progress.bytesPerSecond))
+                // A percentage when the browser records the full size (Safari keeps it in
+                // the .download bundle's Info.plist). Chrome and the other Chromium
+                // browsers never write it anywhere readable — not on the partial file and
+                // not in their History database until the download has already finished —
+                // so there is no total to divide by. Fall back to how much has arrived,
+                // which is still the download's progress; the transfer rate was being read
+                // as if it were a percentage.
+                Text(progress.fraction.map { "\(Int(($0 * 100).rounded()))%" } ?? SystemStats.bytes(progress.bytes))
                     .font(.system(size: 11.5, weight: .regular).monospacedDigit())
                     .foregroundStyle(.cyan)
                     .lineLimit(1)

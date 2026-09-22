@@ -606,23 +606,11 @@ final class IslandModel: ObservableObject {
             case .bluetoothConnected, .bluetoothDisconnected: result = strip(side: 120)
             case .audioOutput, .download: result = strip(side: 112)
             case .dropTarget: result = strip(side: 112)
-            case .message: result = strip(side: 128)
+            case let .message(text, _): result = strip(side: Self.textSide(text, minimum: 128, padding: 14))
             case .copied: result = strip(side: 84)
-            case let .success(text):
-                // The message varies a lot in length ("Trash emptied" vs. "Caches are
-                // already tidy" vs. "Force quit 3 apps") — a fixed width truncated the
-                // longer ones. The text renders in CompactStrip's trailing region, which
-                // gets exactly `side` points with 4pt of trailing padding inside it, so
-                // side needs to cover the measured text width plus that padding.
-                let textWidth = (text as NSString).size(withAttributes: [
-                    .font: NSFont.systemFont(ofSize: 12, weight: .regular)
-                ]).width
-                result = strip(side: max(84, ceil(textWidth) + 10))
+            case let .success(text): result = strip(side: Self.textSide(text, minimum: 84, padding: 14))
             case let .eventStarting(title, _):
-                let textWidth = (title as NSString).size(withAttributes: [
-                    .font: NSFont.systemFont(ofSize: 12, weight: .semibold)
-                ]).width
-                result = strip(side: max(104, ceil(textWidth) + 34))
+                result = strip(side: Self.textSide(title, minimum: 104, padding: 34, weight: .semibold))
             case .screenshot: result = strip(side: 116)
             }
 
@@ -837,10 +825,29 @@ final class IslandModel: ObservableObject {
         isPage(content) ? Self.navigationHeight : 0
     }
 
+    /// The widest a text strip may grow on either side of the notch. Anything past this
+    /// would be wider than `maximumExtent` reserves, and the panel would clip the words
+    /// off rather than the text shrinking to fit.
+    static let maximumStripSide: CGFloat = 232
+
+    /// Room for one line of text beside the notch: what the string actually measures,
+    /// plus the padding the strip puts around it. A fixed width silently truncated the
+    /// longer messages ("Look 20 feet away for 20 seconds" needs about 191pt, half as
+    /// much again as the 128pt it used to get).
+    static func textSide(_ text: String, minimum: CGFloat, padding: CGFloat,
+                         weight: NSFont.Weight = .regular) -> CGFloat {
+        let width = (text as NSString).size(withAttributes: [
+            .font: NSFont.systemFont(ofSize: 12, weight: weight)
+        ]).width
+        return min(maximumStripSide, max(minimum, ceil(width) + padding))
+    }
+
     /// The largest the island ever gets, so the window can be sized once.
     var maximumExtent: CGSize {
         let bubble = (notchSize.height + IslandLayout.bubbleGap) * 2
-        return CGSize(width: max(460 + bubble, notchSize.width + 112 * 2, notchSize.width + (notchSize.height + 42) * 2 + bubble),
+        return CGSize(width: max(460 + bubble, notchSize.width + 112 * 2,
+                                 notchSize.width + Self.maximumStripSide * 2,
+                                 notchSize.width + (notchSize.height + 42) * 2 + bubble),
                       height: notchSize.height + 330)
     }
 

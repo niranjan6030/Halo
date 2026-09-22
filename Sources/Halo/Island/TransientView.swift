@@ -157,13 +157,16 @@ struct TransientView: View {
         case let .success(text):
             CompactStrip(notch: notch, side: side, topRadius: layout.topRadius) {
                 SuccessGlyph(size: notch.height - 6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 6)
             } trailing: {
                 Text(text)
                     .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(.white.opacity(0.92))
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
-                    .padding(.trailing, 4)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.trailing, 6)
             }
 
         case let .eventStarting(title, color):
