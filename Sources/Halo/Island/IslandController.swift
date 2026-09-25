@@ -749,7 +749,9 @@ final class IslandController {
     }
 
     private func trackFullScreen() {
-        guard let screen = targetScreen()?.screen else { return }
+        // Switched off, the island stays off: this runs from the Space-change observer
+        // too, which is live even when the mouse timer that usually drives it is not.
+        guard settings.isEnabled, let screen = targetScreen()?.screen else { return }
         let fullScreen = settings.hideInFullScreen && FullScreenMonitor.isFullScreen(on: screen)
         if fullScreen != model.isFullScreen {
             islandLog.notice("full screen \(fullScreen, privacy: .public)")
