@@ -95,14 +95,22 @@ private struct RemindersRow: View {
                     .background(RoundedRectangle(cornerRadius: 6, style: .continuous)
                         .fill(reminder.tint.color.gradient))
                 VStack(alignment: .leading, spacing: 1) {
+                    // Wording the user typed, so it can be any length. Held to one
+                    // line: System Settings gives a pane a fixed width and clips
+                    // whatever will not fit, so a long reminder must truncate here
+                    // rather than push the switches off the right-hand edge.
                     Text(reminder.text)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                     Text(reminder.seconds > Reminder.defaultSeconds
                          ? "\(Reminder.intervalDescription(reminder.minutes)) · holds \(reminder.seconds)s"
                          : Reminder.intervalDescription(reminder.minutes))
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Spacer(minLength: 8)
                 Button("Edit", action: edit)
                     .buttonStyle(.link)
             }
