@@ -64,16 +64,25 @@ public struct Reminder: Codable, Identifiable, Equatable {
         isOn = try container.decode(Bool.self, forKey: .isOn)
     }
 
+    /// Fixed ids for the two seeded reminders.
+    ///
+    /// The list is worked out from the old switches every time it is read, right up
+    /// until it is first saved. Fresh ids on each read would mean a row could never be
+    /// matched back to its reminder, so a toggle would do nothing and an edit would
+    /// append a copy instead of replacing the original.
+    private static let eyeBreakID = UUID(uuidString: "5F1B0B7C-0E6A-4E2E-9D1E-2E7C0A3F51A1")!
+    private static let waterID = UUID(uuidString: "9C3D4A2B-77E1-4F0C-8A55-1D6B9E84C204")!
+
     /// The 20-20-20 rule, and a glass of water. Seeded for anyone who has never had a
     /// reminder list before, carrying over whether they already had each one on.
     public static func defaults(eyeBreaks: Bool, water: Bool) -> [Reminder] {
         [
             // The eye break holds for its full twenty seconds, so the island itself is
             // the timer you look away from.
-            Reminder(text: "Look 20 feet away for 20 seconds", symbol: "eye.fill", minutes: 20,
-                     seconds: 20, tint: .cyan, isOn: eyeBreaks),
-            Reminder(text: "Time for a glass of water", symbol: "drop.fill", minutes: 60,
-                     tint: .blue, isOn: water),
+            Reminder(id: eyeBreakID, text: "Look 20 feet away for 20 seconds", symbol: "eye.fill",
+                     minutes: 20, seconds: 20, tint: .cyan, isOn: eyeBreaks),
+            Reminder(id: waterID, text: "Time for a glass of water", symbol: "drop.fill",
+                     minutes: 60, tint: .blue, isOn: water),
         ]
     }
 
