@@ -194,6 +194,23 @@ struct TransientView: View {
                     .padding(.trailing, 8)
             }
 
+        case let .reminder(text, symbol, tint, _):
+            CompactStrip(notch: notch, side: side, topRadius: layout.topRadius) {
+                AlertBadge(symbol: symbol, tint: tint, level: nil)
+                    .frame(width: 17, height: 17)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 8)
+            } trailing: {
+                Text(text)
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .alertSettle(delay: 0.16)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.trailing, 6)
+            }
+
         case let .message(text, symbol):
             CompactStrip(notch: notch, side: side, topRadius: layout.topRadius) {
                 AlertBadge(symbol: symbol, tint: symbol.hasPrefix("exclamationmark") ? .orange : .white, level: nil)

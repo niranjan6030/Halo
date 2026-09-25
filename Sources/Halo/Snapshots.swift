@@ -59,6 +59,14 @@ enum Snapshots {
         states.append(("19-airplay", {
             $0.show(.audioOutput(AudioOutputInfo(name: "Living Room TV", symbol: "airplayaudio", isNotable: true)))
         }))
+        // The user's own reminders: the longest wording the list allows, and a short
+        // one, so the measured strip can be checked at both ends.
+        states.append(("32-reminder", {
+            $0.announce("Look 20 feet away for 20 seconds", symbol: "eye.fill", tint: .cyan)
+        }))
+        states.append(("33-reminder-short", {
+            $0.announce("Stretch", symbol: "figure.flexibility", tint: .orange)
+        }))
         states.append(("20-download", {
             $0.show(.download(DownloadInfo(url: URL(fileURLWithPath: "/System/Library/CoreServices/Finder.app"), isAirDrop: true)))
         }))

@@ -64,6 +64,8 @@ enum TransientEvent: Equatable {
     case success(text: String)
     /// A marked calendar event's start time just arrived.
     case eventStarting(title: String, color: Color)
+    /// One of the user's own recurring reminders, with the colour they picked.
+    case reminder(text: String, symbol: String, tint: Color, seconds: Int)
 
     /// Updates of the same kind (volume 40% → 45%) keep the view in place and just
     /// animate the value, instead of cross-fading a new view in.
@@ -84,6 +86,7 @@ enum TransientEvent: Equatable {
         case .screenshot: return "screenshot"
         case .dropTarget: return "dropTarget"
         case .message: return "message"
+        case .reminder: return "reminder"
         case .copied: return "copied"
         case .success: return "success"
         case .eventStarting: return "eventStarting"
@@ -100,6 +103,7 @@ enum TransientEvent: Equatable {
         case .screenshot: return 6
         case .dropTarget: return 30
         case .message: return 2
+        case let .reminder(_, _, _, seconds): return Double(seconds)
         case .copied: return 1.6
         case .success: return 2.2
         case .eventStarting: return 6
@@ -395,7 +399,7 @@ final class IslandModel: ObservableObject {
 
     /// Something the user asked to be told about (a timer ending, a reminder to rest):
     /// shown even if the island is open, unless the pointer is on it.
-    func announce(_ text: String, symbol: String) {
+    func announce(_ text: String, symbol: String, tint: Color? = nil, seconds: Int? = nil) {
         if expanded != nil {
             guard !isHovering, !isMenuOpen else {
                 haptic(.levelChange)
@@ -403,7 +407,8 @@ final class IslandModel: ObservableObject {
             }
             collapse()
         }
-        show(.message(text: text, symbol: symbol))
+        show(tint.map { .reminder(text: text, symbol: symbol, tint: $0, seconds: seconds ?? Reminder.defaultSeconds) }
+             ?? .message(text: text, symbol: symbol))
     }
 
     /// Closes views whose content has gone, and brings swiped-away activities back
@@ -607,6 +612,7 @@ final class IslandModel: ObservableObject {
             case .audioOutput, .download: result = strip(side: 112)
             case .dropTarget: result = strip(side: 112)
             case let .message(text, _): result = strip(side: Self.textSide(text, minimum: 128, padding: 14))
+            case let .reminder(text, _, _, _): result = strip(side: Self.textSide(text, minimum: 128, padding: 14))
             case .copied: result = strip(side: 84)
             case let .success(text): result = strip(side: Self.textSide(text, minimum: 84, padding: 14))
             case let .eventStarting(title, _):

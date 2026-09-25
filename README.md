@@ -139,8 +139,14 @@ Switch each on in System Settings → Dynamic Island → Pages. Every page gets 
 | Quick Note | A note that's always a click away, saved as you type; copy or clear it from the island. |
 | Mirror | A live, mirrored camera view for a check before a call. The camera runs only while it's open. |
 
-**Wellbeing.** Optional eye-break reminders (the 20-20-20 rule, every 20 minutes) and water
-reminders (hourly), counted only while you're using the Mac.
+**Reminders.** Recurring nudges in the island, as many as you like. Each one has its own
+wording, SF Symbol, colour, interval and how long it holds on screen — turn the hold up and
+the island becomes the timer you look away from. Two ship switched on: the 20-20-20 rule
+(every 20 minutes, holding for its full 20 seconds) and a glass of water every hour.
+
+They are counted in screen time rather than keystrokes, so reading and watching count too,
+and a real break away from the Mac starts the count again. Nothing appears over a
+full-screen app or an open island; the nudge waits for the next moment instead.
 
 ## Motion
 

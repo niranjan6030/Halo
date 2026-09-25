@@ -63,9 +63,20 @@ public final class Settings: ObservableObject {
     @Published public var idlePage: String { didSet { store(idlePage, .idlePage) } }
     /// Comma-separated `IslandPage` names that are switched on.
     @Published public var extraPages: String { didSet { store(extraPages, .extraPages) } }
-    /// 20-20-20 eye breaks and water reminders while you're at the Mac.
+    /// The original two wellbeing switches. They only seed `reminders` now, and are
+    /// kept so an existing setup carries over rather than starting from scratch.
     @Published public var eyeBreaks: Bool { didSet { store(eyeBreaks, .eyeBreaks) } }
     @Published public var hydrationReminders: Bool { didSet { store(hydrationReminders, .hydrationReminders) } }
+    /// The reminder list as JSON — see `reminders` for the typed way in and out.
+    @Published public var remindersJSON: String { didSet { store(remindersJSON, .reminders) } }
+
+    /// Every reminder the user has. Until they touch the list it is derived from the
+    /// old eye-break and water switches, so an existing setup carries over untouched
+    /// and only becomes a stored list once it is actually edited.
+    public var reminders: [Reminder] {
+        get { Reminder.decode(remindersJSON) ?? Reminder.defaults(eyeBreaks: eyeBreaks, water: hydrationReminders) }
+        set { remindersJSON = Reminder.encode(newValue.map { $0.sanitised() }) }
+    }
     @Published public var timerSound: Bool { didSet { store(timerSound, .timerSound) } }
     /// New screenshots go straight onto the clipboard, ready for ⌘V.
     @Published public var copyScreenshots: Bool { didSet { store(copyScreenshots, .copyScreenshots) } }
@@ -93,6 +104,7 @@ public final class Settings: ObservableObject {
         case weatherCity, clipboardHistory, showCopiedInIsland
         case controlsLeftTile, controlsRightTile, controlsButtons, showVolumeSlider, idlePage, avoidMenuBarIcons
         case rainAlerts, extraPages, eyeBreaks, hydrationReminders, timerSound, copyScreenshots, screenshotsOffDesktop
+        case reminders
     }
 
     private init() {
@@ -189,6 +201,7 @@ public final class Settings: ObservableObject {
         avoidMenuBarIcons = defaults.bool(forKey: Key.avoidMenuBarIcons.rawValue)
         extraPages = defaults.string(forKey: Key.extraPages.rawValue) ?? IslandPage.defaultPages
         eyeBreaks = defaults.bool(forKey: Key.eyeBreaks.rawValue)
+        remindersJSON = defaults.string(forKey: Key.reminders.rawValue) ?? ""
         hydrationReminders = defaults.bool(forKey: Key.hydrationReminders.rawValue)
         timerSound = defaults.bool(forKey: Key.timerSound.rawValue)
         copyScreenshots = defaults.bool(forKey: Key.copyScreenshots.rawValue)
@@ -292,6 +305,7 @@ public final class Settings: ObservableObject {
         case .avoidMenuBarIcons: assign(\.avoidMenuBarIcons)
         case .extraPages: assign(\.extraPages)
         case .eyeBreaks: assign(\.eyeBreaks)
+        case .reminders: assign(\.remindersJSON)
         case .hydrationReminders: assign(\.hydrationReminders)
         case .timerSound: assign(\.timerSound)
         case .copyScreenshots: assign(\.copyScreenshots)

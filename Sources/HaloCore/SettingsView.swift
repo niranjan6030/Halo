@@ -157,14 +157,7 @@ public struct SettingsView: View {
                     Text("Each page gets an icon along the bottom of the expanded island; swipe with two fingers to move between them. Lyrics come from LRCLIB, a free lyrics library. Reminders and Mirror ask for access the first time you open them.")
                 }
 
-                Section {
-                    row("Eye breaks every 20 minutes", "eye.fill", .cyan, $settings.eyeBreaks)
-                    row("Drink water every hour", "drop.fill", .blue, $settings.hydrationReminders)
-                } header: {
-                    Text("Wellbeing")
-                } footer: {
-                    Text("Gentle reminders in the island, counted only while you're actually using your Mac. An eye break is the 20-20-20 rule: every 20 minutes, look at something 20 feet away for 20 seconds.")
-                }
+                RemindersSection(settings: settings)
 
                 Section {
                     Toggle("Keep clear of menu bar icons", isOn: $settings.avoidMenuBarIcons)

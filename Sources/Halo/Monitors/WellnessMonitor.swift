@@ -1,58 +1,111 @@
 import CoreGraphics
 import Foundation
+import HaloCore
+import IOKit.pwr_mgt
 
-/// Eye-break and water reminders, counted only while someone is using the Mac:
-/// time away (no input for five minutes) resets the eye-break count.
+/// Recurring reminders, counted in real screen time rather than keystrokes.
+///
+/// Each reminder keeps its own count of minutes, so any number of them can run at
+/// once on their own schedules. A genuine break away from the Mac resets them all,
+/// which is the point: an eye break you already took should not be nagged for.
 @MainActor
 final class WellnessMonitor {
-    enum Reminder {
-        case eyeBreak, water
-    }
-
+    /// Asked before a reminder is shown. When it says no — the island is hidden behind
+    /// a full-screen app, or expanded — the minute is kept rather than spent, so the
+    /// reminder arrives at the next opportunity instead of vanishing for a whole cycle.
+    var canShow: (() -> Bool)?
     var onReminder: ((Reminder) -> Void)?
 
+    /// Minutes at the screen with no input at all before we assume nobody is there.
+    /// Only reached when nothing is holding the display awake, so a film is safe.
+    private static let quietMinutesBeforeAway = 10
+    /// Minutes away that count as a real break and clear every counter.
+    private static let awayMinutesForBreak = 5
+
     private var timer: Timer?
-    private var activeMinutesSinceEyeBreak = 0
-    private var activeMinutesSinceWater = 0
-    private var eyeBreaks = false
-    private var water = false
+    private var reminders: [Reminder] = []
+    /// Screen-time minutes counted per reminder id.
+    private var minutes: [UUID: Int] = [:]
+    private var awayMinutes = 0
 
-    static let eyeBreakInterval = 20
-    static let waterInterval = 60
+    func update(reminders: [Reminder]) {
+        self.reminders = reminders
+        // Forget counts for reminders that are gone or switched off.
+        let live = Set(reminders.filter(\.isOn).map(\.id))
+        minutes = minutes.filter { live.contains($0.key) }
 
-    func update(eyeBreaks: Bool, water: Bool) {
-        self.eyeBreaks = eyeBreaks
-        self.water = water
-        if eyeBreaks || water {
-            guard timer == nil else { return }
+        if live.isEmpty {
+            timer?.invalidate()
+            timer = nil
+        } else if timer == nil {
             timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
                 MainActor.assumeIsolated { self?.minutePassed() }
             }
-        } else {
-            timer?.invalidate()
-            timer = nil
-            activeMinutesSinceEyeBreak = 0
-            activeMinutesSinceWater = 0
         }
     }
 
     private func minutePassed() {
-        let anyInput = CGEventType(rawValue: ~0)!
-        let idle = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: anyInput)
-        if idle > 300 {
-            // A proper break away from the screen counts as the eye break.
-            activeMinutesSinceEyeBreak = 0
+        guard Self.isAtTheScreen else {
+            awayMinutes += 1
+            // Long enough away to have rested: start everyone from zero.
+            if awayMinutes >= Self.awayMinutesForBreak { minutes.removeAll() }
             return
         }
-        guard idle < 90 else { return }
-        activeMinutesSinceEyeBreak += 1
-        activeMinutesSinceWater += 1
-        if eyeBreaks, activeMinutesSinceEyeBreak >= Self.eyeBreakInterval {
-            activeMinutesSinceEyeBreak = 0
-            onReminder?(.eyeBreak)
-        } else if water, activeMinutesSinceWater >= Self.waterInterval {
-            activeMinutesSinceWater = 0
-            onReminder?(.water)
+        awayMinutes = 0
+
+        for reminder in reminders where reminder.isOn {
+            let count = (minutes[reminder.id] ?? 0) + 1
+            guard count >= reminder.minutes else {
+                minutes[reminder.id] = count
+                continue
+            }
+            // Every reminder that comes due is delivered; they used to be checked with
+            // an `else if`, so a water reminder falling on the same minute as an eye
+            // break was skipped and always slipped a minute late.
+            guard canShow?() ?? true else {
+                minutes[reminder.id] = count
+                continue
+            }
+            minutes[reminder.id] = 0
+            onReminder?(reminder)
         }
+    }
+
+    // MARK: Is anybody there?
+
+    /// Screen time as eyes experience it: the display lit, the session unlocked, and
+    /// someone plausibly in front of it.
+    ///
+    /// Input alone is a poor test — reading a long page or watching a film is exactly
+    /// when an eye break is worth having, and produces no keystrokes for ages. So a
+    /// quiet stretch only counts as away when nothing is holding the display awake,
+    /// which is the assertion every video player takes out while it plays.
+    private static var isAtTheScreen: Bool {
+        if CGDisplayIsAsleep(CGMainDisplayID()) != 0 { return false }
+        if isLocked { return false }
+        if quietSeconds < Double(quietMinutesBeforeAway * 60) { return true }
+        return isDisplayHeldAwake
+    }
+
+    private static var quietSeconds: Double {
+        guard let anyInput = CGEventType(rawValue: ~0) else { return 0 }
+        return CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: anyInput)
+    }
+
+    /// Locked, or switched to another user's session.
+    private static var isLocked: Bool {
+        guard let session = CGSessionCopyCurrentDictionary() as? [String: Any] else { return false }
+        if session["CGSSessionScreenIsLocked"] as? Bool == true { return true }
+        return session[kCGSessionOnConsoleKey as String] as? Bool == false
+    }
+
+    /// True while some app is keeping the display from sleeping — a video playing,
+    /// a presentation, Amphetamine and the like.
+    private static var isDisplayHeldAwake: Bool {
+        var status: Unmanaged<CFDictionary>?
+        guard IOPMCopyAssertionsStatus(&status) == kIOReturnSuccess,
+              let counts = status?.takeRetainedValue() as? [String: Int] else { return false }
+        return counts[kIOPMAssertionTypeNoDisplaySleep as String] ?? 0 > 0
+            || counts[kIOPMAssertionTypePreventUserIdleDisplaySleep as String] ?? 0 > 0
     }
 }

@@ -462,7 +462,7 @@ final class IslandController {
         toggle(bluetooth.start, bluetooth.stop, settings.showBluetooth)
         toggle(privacy.start, privacy.stop, settings.showPrivacy || settings.showCalls)
         toggle(calendar.start, calendar.stop, settings.showCalendar)
-        wellness.update(eyeBreaks: settings.eyeBreaks, water: settings.hydrationReminders)
+        wellness.update(reminders: settings.reminders)
         toggle(weather.start, weather.stop, settings.usesWeather)
         toggle(clipboard.start, clipboard.stop, settings.clipboardHistory)
         clipboard.copiesScreenshots = settings.copyScreenshots
@@ -492,12 +492,15 @@ final class IslandController {
             self?.model.updateVolume(level: level, muted: level == 0)
         }
         model.screenFrame = { [weak self] in self?.screenFrame ?? NSScreen.main?.frame ?? .zero }
+        // Asked before a reminder is spent, so one that cannot be shown right now waits
+        // instead of being lost for a whole cycle.
+        wellness.canShow = { [weak self] in
+            guard let self else { return false }
+            return !self.model.isFullScreen && self.model.expanded == nil
+        }
         wellness.onReminder = { [weak self] reminder in
-            guard let self, !self.model.isFullScreen else { return }
-            switch reminder {
-            case .eyeBreak: self.model.announce("Look 20 feet away for 20 seconds", symbol: "eye.fill")
-            case .water: self.model.announce("Time for a glass of water", symbol: "drop.fill")
-            }
+            self?.model.announce(reminder.text, symbol: reminder.symbol, tint: reminder.tint.color,
+                                 seconds: reminder.seconds)
         }
         model.toggleMute = { [weak self] in
             guard let self, let level = self.volume.toggleMute() else { return }
@@ -618,7 +621,7 @@ final class IslandController {
         bluetooth.stop()
         privacy.stop()
         calendar.stop()
-        wellness.update(eyeBreaks: false, water: false)
+        wellness.update(reminders: [])
         weather.stop()
         clipboard.stop()
         clipboardHotKey.unregister()
