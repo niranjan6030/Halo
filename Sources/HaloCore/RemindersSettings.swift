@@ -25,10 +25,23 @@ struct RemindersSection: View {
             } label: {
                 Label("Add Reminder", systemImage: "plus.circle.fill")
             }
+
+            Toggle("Quiet hours", isOn: $settings.quietHoursOn)
+            if settings.quietHoursOn {
+                HStack {
+                    Text("From")
+                    TimeOfDayPicker(minutes: $settings.quietFrom)
+                    Text("to")
+                    TimeOfDayPicker(minutes: $settings.quietTo)
+                    Spacer()
+                }
+            }
         } header: {
             Text("Reminders")
         } footer: {
-            Text("Recurring nudges in the island, counted in screen time — reading and watching count too, and a real break away from the Mac starts the count again. The first two are the 20-20-20 rule and a glass of water; change them, or add your own.")
+            Text(settings.quietHoursOn
+                 ? "Recurring nudges in the island, counted in screen time — reading and watching count too, and a real break away from the Mac starts the count again. Between \(QuietHours.describe(settings.quietFrom)) and \(QuietHours.describe(settings.quietTo)) the counts stand still, so nothing is saved up to land the moment the quiet ends."
+                 : "Recurring nudges in the island, counted in screen time — reading and watching count too, and a real break away from the Mac starts the count again. The first two are the 20-20-20 rule and a glass of water; change them, or add your own.")
         }
         .sheet(item: $editing) { reminder in
             ReminderEditor(reminder: reminder,
@@ -203,5 +216,33 @@ private struct ReminderEditor: View {
         }
         .padding(20)
         .frame(width: 440)
+    }
+}
+
+/// An hour-and-minute picker that stores plain minutes past midnight, shown in
+/// whatever clock format the Mac is set to.
+private struct TimeOfDayPicker: View {
+    @Binding var minutes: Int
+
+    var body: some View {
+        DatePicker("", selection: Binding(
+            get: { Self.date(from: minutes) },
+            set: { minutes = Self.minutes(from: $0) }
+        ), displayedComponents: .hourAndMinute)
+            .labelsHidden()
+            .datePickerStyle(.field)
+            .frame(width: 90)
+    }
+
+    private static func date(from minutes: Int) -> Date {
+        var parts = DateComponents()
+        parts.hour = minutes / 60
+        parts.minute = minutes % 60
+        return Calendar.current.date(from: parts) ?? Date()
+    }
+
+    private static func minutes(from date: Date) -> Int {
+        let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
+        return (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
     }
 }

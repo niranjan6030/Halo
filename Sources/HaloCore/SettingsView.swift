@@ -20,7 +20,10 @@ public struct SettingsView: View {
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
-                        .fixedSize()
+                        // Height only. A plain fixedSize() pins the width too, and this
+                        // sentence is long enough to drag the whole form wider than the
+                        // pane, pushing every switch off the right-hand edge.
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
@@ -59,6 +62,14 @@ public struct SettingsView: View {
                         get: { settings.launchAtLogin },
                         set: { settings.send(command: "setLaunchAtLogin", value: $0) }
                     ))
+                    Picker("Pop-ups stay on screen", selection: Binding(
+                        get: { settings.alertPace },
+                        set: { settings.alertPace = $0 }
+                    )) {
+                        ForEach(AlertPace.allCases) { pace in
+                            Text(pace.title).tag(pace)
+                        }
+                    }
                 } header: {
                     Text("Behaviour")
                 } footer: {
@@ -92,6 +103,14 @@ public struct SettingsView: View {
                     row("Weather", "cloud.sun.fill", .blue, $settings.showWeather)
                     if settings.showWeather {
                         Toggle("Tell me when rain is on the way", isOn: $settings.rainAlerts)
+                        Picker("Temperature", selection: Binding(
+                            get: { settings.temperatureUnit },
+                            set: { settings.temperatureUnit = $0 }
+                        )) {
+                            ForEach(TemperatureUnit.allCases) { unit in
+                                Text(unit.title).tag(unit)
+                            }
+                        }
                         TextField("City", text: $settings.weatherCity, prompt: Text("Work it out from this Mac"))
                             .textFieldStyle(.roundedBorder)
                     }

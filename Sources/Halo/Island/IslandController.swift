@@ -462,7 +462,7 @@ final class IslandController {
         toggle(bluetooth.start, bluetooth.stop, settings.showBluetooth)
         toggle(privacy.start, privacy.stop, settings.showPrivacy || settings.showCalls)
         toggle(calendar.start, calendar.stop, settings.showCalendar)
-        wellness.update(reminders: settings.reminders)
+        wellness.update(reminders: settings.reminders, quietHours: settings.quietHours)
         toggle(weather.start, weather.stop, settings.usesWeather)
         toggle(clipboard.start, clipboard.stop, settings.clipboardHistory)
         clipboard.copiesScreenshots = settings.copyScreenshots
@@ -473,7 +473,10 @@ final class IslandController {
         } else {
             clipboardHotKey.unregister()
         }
-        if settings.usesWeather { weather.updateCity(settings.weatherCity) }
+        if settings.usesWeather {
+            weather.updateUnit(settings.temperatureUnit)
+            weather.updateCity(settings.weatherCity)
+        }
         toggle(network.start, network.stop, settings.showNetwork)
         toggle(downloads.start, downloads.stop, settings.showDownloads)
         if settings.replaceSystemHUD {
@@ -621,7 +624,7 @@ final class IslandController {
         bluetooth.stop()
         privacy.stop()
         calendar.stop()
-        wellness.update(reminders: [])
+        wellness.update(reminders: [], quietHours: settings.quietHours)
         weather.stop()
         clipboard.stop()
         clipboardHotKey.unregister()

@@ -93,7 +93,18 @@ enum TransientEvent: Equatable {
         }
     }
 
-    var duration: TimeInterval {
+    /// How long this sits on screen at the pace the user picked.
+    ///
+    /// A reminder is left alone — its hold is a number they typed themselves — and so
+    /// is the drop target, which waits on a drag rather than on reading time.
+    func duration(at pace: AlertPace) -> TimeInterval {
+        switch self {
+        case .dropTarget, .reminder: return baseDuration
+        default: return baseDuration * pace.scale
+        }
+    }
+
+    private var baseDuration: TimeInterval {
         switch self {
         case .volume, .brightness, .capsLock: return 1.6
         case .charging: return 3
@@ -875,7 +886,7 @@ final class IslandModel: ObservableObject {
 
         transient = event
         islandLog.notice("show \(event.kind, privacy: .public)")
-        scheduleTransientDismissal(after: event.duration)
+        scheduleTransientDismissal(after: event.duration(at: settings.alertPace))
         if event.isImportant { haptic(.levelChange) }
     }
 

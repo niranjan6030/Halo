@@ -24,12 +24,14 @@ final class WellnessMonitor {
 
     private var timer: Timer?
     private var reminders: [Reminder] = []
+    private var quietHours = QuietHours(isOn: false, from: QuietHours.defaultFrom, to: QuietHours.defaultTo)
     /// Screen-time minutes counted per reminder id.
     private var minutes: [UUID: Int] = [:]
     private var awayMinutes = 0
 
-    func update(reminders: [Reminder]) {
+    func update(reminders: [Reminder], quietHours: QuietHours) {
         self.reminders = reminders
+        self.quietHours = quietHours
         // Forget counts for reminders that are gone or switched off.
         let live = Set(reminders.filter(\.isOn).map(\.id))
         minutes = minutes.filter { live.contains($0.key) }
@@ -45,6 +47,9 @@ final class WellnessMonitor {
     }
 
     private func minutePassed() {
+        // Inside quiet hours the counts simply stand still: nothing is shown, and
+        // nothing piles up to arrive all at once the moment the window closes.
+        guard !quietHours.contains(Date()) else { return }
         guard Self.isAtTheScreen else {
             awayMinutes += 1
             // Long enough away to have rested: start everyone from zero.

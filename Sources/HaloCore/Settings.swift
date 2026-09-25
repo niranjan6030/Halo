@@ -77,6 +77,32 @@ public final class Settings: ObservableObject {
         get { Reminder.decode(remindersJSON) ?? Reminder.defaults(eyeBreaks: eyeBreaks, water: hydrationReminders) }
         set { remindersJSON = Reminder.encode(newValue.map { $0.sanitised() }) }
     }
+    /// A stretch of the day to keep reminders quiet, as minutes past midnight.
+    @Published public var quietHoursOn: Bool { didSet { store(quietHoursOn, .quietHoursOn) } }
+    @Published public var quietFrom: Int { didSet { store(quietFrom, .quietFrom) } }
+    @Published public var quietTo: Int { didSet { store(quietTo, .quietTo) } }
+    @Published public var alertPaceRaw: String { didSet { store(alertPaceRaw, .alertPace) } }
+    @Published public var temperatureUnitRaw: String { didSet { store(temperatureUnitRaw, .temperatureUnit) } }
+
+    public var quietHours: QuietHours {
+        get { QuietHours(isOn: quietHoursOn, from: quietFrom, to: quietTo) }
+        set {
+            quietHoursOn = newValue.isOn
+            quietFrom = newValue.from
+            quietTo = newValue.to
+        }
+    }
+
+    public var alertPace: AlertPace {
+        get { AlertPace(rawValue: alertPaceRaw) ?? .normal }
+        set { alertPaceRaw = newValue.rawValue }
+    }
+
+    public var temperatureUnit: TemperatureUnit {
+        get { TemperatureUnit(rawValue: temperatureUnitRaw) ?? .automatic }
+        set { temperatureUnitRaw = newValue.rawValue }
+    }
+
     @Published public var timerSound: Bool { didSet { store(timerSound, .timerSound) } }
     /// New screenshots go straight onto the clipboard, ready for ⌘V.
     @Published public var copyScreenshots: Bool { didSet { store(copyScreenshots, .copyScreenshots) } }
@@ -104,7 +130,7 @@ public final class Settings: ObservableObject {
         case weatherCity, clipboardHistory, showCopiedInIsland
         case controlsLeftTile, controlsRightTile, controlsButtons, showVolumeSlider, idlePage, avoidMenuBarIcons
         case rainAlerts, extraPages, eyeBreaks, hydrationReminders, timerSound, copyScreenshots, screenshotsOffDesktop
-        case reminders
+        case reminders, quietHoursOn, quietFrom, quietTo, alertPace, temperatureUnit
     }
 
     private init() {
@@ -153,6 +179,11 @@ public final class Settings: ObservableObject {
             Key.timerSound.rawValue: true,
             Key.copyScreenshots.rawValue: true,
             Key.screenshotsOffDesktop.rawValue: true,
+            Key.quietHoursOn.rawValue: false,
+            Key.quietFrom.rawValue: QuietHours.defaultFrom,
+            Key.quietTo.rawValue: QuietHours.defaultTo,
+            Key.alertPace.rawValue: AlertPace.normal.rawValue,
+            Key.temperatureUnit.rawValue: TemperatureUnit.automatic.rawValue,
             Key.showCopiedInIsland.rawValue: true,
             Key.weatherCity.rawValue: "",
         ])
@@ -202,6 +233,12 @@ public final class Settings: ObservableObject {
         extraPages = defaults.string(forKey: Key.extraPages.rawValue) ?? IslandPage.defaultPages
         eyeBreaks = defaults.bool(forKey: Key.eyeBreaks.rawValue)
         remindersJSON = defaults.string(forKey: Key.reminders.rawValue) ?? ""
+        quietHoursOn = defaults.bool(forKey: Key.quietHoursOn.rawValue)
+        quietFrom = defaults.integer(forKey: Key.quietFrom.rawValue)
+        quietTo = defaults.integer(forKey: Key.quietTo.rawValue)
+        alertPaceRaw = defaults.string(forKey: Key.alertPace.rawValue) ?? AlertPace.normal.rawValue
+        temperatureUnitRaw = defaults.string(forKey: Key.temperatureUnit.rawValue)
+            ?? TemperatureUnit.automatic.rawValue
         hydrationReminders = defaults.bool(forKey: Key.hydrationReminders.rawValue)
         timerSound = defaults.bool(forKey: Key.timerSound.rawValue)
         copyScreenshots = defaults.bool(forKey: Key.copyScreenshots.rawValue)
@@ -306,6 +343,11 @@ public final class Settings: ObservableObject {
         case .extraPages: assign(\.extraPages)
         case .eyeBreaks: assign(\.eyeBreaks)
         case .reminders: assign(\.remindersJSON)
+        case .quietHoursOn: assign(\.quietHoursOn)
+        case .quietFrom: assign(\.quietFrom)
+        case .quietTo: assign(\.quietTo)
+        case .alertPace: assign(\.alertPaceRaw)
+        case .temperatureUnit: assign(\.temperatureUnitRaw)
         case .hydrationReminders: assign(\.hydrationReminders)
         case .timerSound: assign(\.timerSound)
         case .copyScreenshots: assign(\.copyScreenshots)

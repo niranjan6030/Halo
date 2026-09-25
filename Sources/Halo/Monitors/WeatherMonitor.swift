@@ -1,5 +1,6 @@
 import AppKit
 import CoreLocation
+import HaloCore
 import SwiftUI
 
 /// Current conditions and a short forecast for where you are.
@@ -43,7 +44,11 @@ final class WeatherMonitor: NSObject, ObservableObject {
     @Published private(set) var conditions: Conditions?
     @Published private(set) var failure: String?
     /// Celsius unless the user's region uses Fahrenheit.
-    let usesFahrenheit = Locale.current.measurementSystem != .metric
+    /// Set from the user's choice; falls back to whatever the Mac's region implies.
+    var unit: TemperatureUnit = .automatic
+    var usesFahrenheit: Bool {
+        unit.prefersFahrenheit ?? (Locale.current.measurementSystem != .metric)
+    }
 
     private let locations = CLLocationManager()
     private var timer: Timer?
@@ -62,6 +67,17 @@ final class WeatherMonitor: NSObject, ObservableObject {
     }
 
     /// Called by the controller when the city in Settings changes.
+    /// Switching units means the numbers already on screen are in the wrong one, so
+    /// the readings are thrown away and fetched again.
+    func updateUnit(_ unit: TemperatureUnit) {
+        guard unit != self.unit else { return }
+        self.unit = unit
+        conditions = nil
+        failure = nil
+        guard isRunning else { return }
+        refresh()
+    }
+
     func updateCity(_ city: String) {
         let trimmed = city.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed != self.city else { return }
