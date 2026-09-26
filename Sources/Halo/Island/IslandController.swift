@@ -426,18 +426,32 @@ final class IslandController {
         settings.updateStatus(launchAtLogin: LoginItem.isEnabled, accessibilityGranted: mediaKeys.isTrusted)
     }
 
-    /// Accessibility has no change notification; check for a while after asking.
+    /// Accessibility has no change notification, so when something wants it and has
+    /// not got it, keep checking quietly.
+    ///
+    /// This used to run only for three minutes after the Allow button was pressed.
+    /// Permission is just as often granted straight from System Settings — and,
+    /// because an ad-hoc signature pins the grant to one build, has to be given
+    /// again after every update. Either way the switch was already on and nothing
+    /// asked again, so the keys stayed dead until Halo was restarted.
     private func watchForAccessibilityGrant() {
-        accessibilityPoll?.invalidate()
-        var checks = 0
-        accessibilityPoll = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
+        let wanted = settings.isEnabled && (settings.replaceSystemHUD || settings.avoidMenuBarIcons)
+        guard wanted, !mediaKeys.isTrusted else {
+            accessibilityPoll?.invalidate()
+            accessibilityPoll = nil
+            return
+        }
+        guard accessibilityPoll == nil else { return }
+        islandLog.notice("waiting for accessibility")
+        accessibilityPoll = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { [weak self] timer in
             MainActor.assumeIsolated {
                 guard let self else { return timer.invalidate() }
-                checks += 1
-                if self.mediaKeys.isTrusted || checks > 180 {
-                    timer.invalidate()
-                    self.applySettings()
-                }
+                guard self.mediaKeys.isTrusted else { return }
+                timer.invalidate()
+                self.accessibilityPoll = nil
+                islandLog.notice("accessibility granted")
+                // Picks up the media key tap and tells Settings the warning can go.
+                self.applySettings()
             }
         }
     }
@@ -484,6 +498,8 @@ final class IslandController {
         } else {
             mediaKeys.stop()
         }
+
+        watchForAccessibilityGrant()
 
         model.updateNotch(size: target.notch, hasNotch: target.hasNotch)
         position(on: target.screen)
@@ -632,6 +648,9 @@ final class IslandController {
         network.stop()
         downloads.stop()
         mediaKeys.stop()
+        // Nothing wants Accessibility while the island is off, so stop looking for it.
+        accessibilityPoll?.invalidate()
+        accessibilityPoll = nil
     }
 
     // MARK: Placement
