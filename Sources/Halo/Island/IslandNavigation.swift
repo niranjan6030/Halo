@@ -73,6 +73,7 @@ struct IslandNavigation: View {
         case .shortcuts: return IslandPage.shortcuts.symbol
         case .timer: return IslandPage.timer.symbol
         case .system: return IslandPage.system.symbol
+        case .devices: return IslandPage.devices.symbol
         case .reminders: return IslandPage.reminders.symbol
         case .notes: return IslandPage.notes.symbol
         case .mirror: return IslandPage.mirror.symbol
@@ -91,6 +92,7 @@ struct IslandNavigation: View {
         case .shortcuts: return "Shortcuts"
         case .timer: return "Timer"
         case .system: return "System"
+        case .devices: return "Devices"
         case .reminders: return "Reminders"
         case .notes: return "Quick Note"
         case .mirror: return "Mirror"

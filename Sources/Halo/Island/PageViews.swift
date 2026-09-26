@@ -628,3 +628,101 @@ struct StorageTile: View {
         .onDisappear { stats.stopWatching() }
     }
 }
+
+/// This Mac's battery and every connected Bluetooth device, with whatever charge
+/// each one reports. AirPods and Beats report a level per side; a mouse or keyboard
+/// reports one; anything else simply shows as connected.
+struct DevicesPageView: View {
+    @ObservedObject var model: IslandModel
+    @ObservedObject var bluetooth: BluetoothMonitor
+
+    var body: some View {
+        let mac = model.batterySnapshot()
+        GlassGroup(spacing: 8) {
+            VStack(spacing: 8) {
+                Color.clear.frame(height: model.notchSize.height - 2)
+                if let mac {
+                    DeviceRow(symbol: "laptopcomputer", name: "This Mac",
+                              detail: mac.isCharging ? "Charging" : (mac.onAC ? "Plugged in" : nil),
+                              levels: [mac.percent])
+                }
+                ForEach(bluetooth.connected, id: \.name) { device in
+                    DeviceRow(symbol: device.symbol, name: device.name,
+                              detail: device.batterySummary == nil ? "Connected" : nil,
+                              levels: Self.levels(for: device))
+                }
+                if mac == nil && bluetooth.connected.isEmpty {
+                    Text("Nothing connected")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.white.opacity(0.5))
+                        .frame(maxHeight: .infinity)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 10)
+            .padding(.bottom, 6)
+        }
+        // Offscreen rendering has no Bluetooth stack to ask, and calling into
+        // IOBluetooth there takes the process down with it.
+        .onAppear { if !RenderMode.isSnapshot { bluetooth.beginWatchingDevices() } }
+        .onDisappear { bluetooth.endWatchingDevices() }
+    }
+
+    /// Both sides when a device reports them separately, otherwise the single level.
+    private static func levels(for device: BluetoothDeviceInfo) -> [Int] {
+        if let single = device.batterySingle { return [single] }
+        return [device.batteryLeft, device.batteryRight].compactMap { $0 }
+    }
+}
+
+private struct DeviceRow: View {
+    let symbol: String
+    let name: String
+    let detail: String?
+    let levels: [Int]
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: symbol)
+                .font(.system(size: 13))
+                .foregroundStyle(.white.opacity(0.9))
+                .frame(width: 22)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.92))
+                    .lineLimit(1)
+                if let detail {
+                    Text(detail)
+                        .font(.system(size: 10))
+                        .foregroundStyle(.white.opacity(0.5))
+                }
+            }
+            Spacer(minLength: 6)
+            HStack(spacing: 6) {
+                ForEach(Array(levels.enumerated()), id: \.offset) { _, level in
+                    HStack(spacing: 4) {
+                        Capsule()
+                            .fill(.white.opacity(0.16))
+                            .frame(width: 34, height: 5)
+                            .overlay(alignment: .leading) {
+                                Capsule()
+                                    .fill(Self.tint(level))
+                                    .frame(width: 34 * CGFloat(level) / 100, height: 5)
+                            }
+                        Text("\(level)%")
+                            .font(.system(size: 10, weight: .medium).monospacedDigit())
+                            .foregroundStyle(.white.opacity(0.75))
+                    }
+                }
+            }
+        }
+        .frame(height: 30)
+    }
+
+    private static func tint(_ level: Int) -> Color {
+        if level <= 10 { return .red }
+        if level <= 20 { return .orange }
+        return .green
+    }
+}

@@ -255,6 +255,7 @@ public struct SettingsView: View {
         case .shortcuts: return .indigo
         case .timer: return .orange
         case .system: return .gray
+        case .devices: return .teal
         case .reminders: return .blue
         case .notes: return .yellow
         case .mirror: return .green

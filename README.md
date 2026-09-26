@@ -136,6 +136,7 @@ Switch each on in System Settings → Dynamic Island → Pages. Every page gets 
 | Timer | 1 minute to 90 minutes, a stopwatch, or Pomodoro (25 minutes of focus, 5-minute breaks, a 15-minute break after four). A running timer shows in the compact island (or as a ring beside it), and the island tells you when it ends. |
 | System | CPU, frames per second (and the screen's refresh rate), memory, free storage, network speed, battery health and cycle count, uptime and temperature. |
 | Reminders | Unfinished reminders, soonest first; tick them off, or add one in a small window. |
+| Devices | This Mac's battery and every connected Bluetooth device, each with whatever charge it reports — both sides for AirPods. |
 | Quick Note | A note that's always a click away, saved as you type; copy or clear it from the island. |
 | Mirror | A live, mirrored camera view for a check before a call. The camera runs only while it's open. |
 

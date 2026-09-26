@@ -13,7 +13,8 @@ enum Snapshots {
         func make() -> IslandModel {
             let model = IslandModel(settings: IslandSettings.shared, nowPlaying: NowPlayingMonitor(),
                                     calendar: CalendarMonitor(), weather: WeatherMonitor(),
-                                    privacy: PrivacyMonitor(), clipboard: ClipboardHistory(), openSettings: {})
+                                    privacy: PrivacyMonitor(), clipboard: ClipboardHistory(),
+                                    bluetooth: BluetoothMonitor(), openSettings: {})
             model.updateNotch(size: CGSize(width: 185, height: 32), hasNotch: true)
             return model
         }
@@ -63,6 +64,7 @@ enum Snapshots {
             $0.nowPlaying.loadPreview(track: track, artwork: artwork)
             $0.updateMenuBarRoom(.init(left: 0, right: 64))
         }))
+        states.append(("36-devices", { $0.expand(.devices) }))
         states.append(("29-reminders", { $0.expand(.reminders) }))
         states.append(("17-network-hotspot", { $0.show(.network(.hotspot)) }))
         states.append(("18-caps-lock", { $0.show(.capsLock(on: true)) }))
@@ -82,6 +84,7 @@ enum Snapshots {
         }))
 
         for (name, setUp) in states {
+            FileHandle.standardError.write(Data("rendering \(name)\n".utf8))
             let model = make()
             setUp(model)
             let extent = model.maximumExtent

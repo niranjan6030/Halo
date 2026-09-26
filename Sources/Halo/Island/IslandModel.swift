@@ -31,6 +31,7 @@ enum ExpandedContent: Hashable {
     case lyrics
     case timer
     case system
+    case devices
     case reminders
     case notes
     case shortcuts
@@ -301,6 +302,8 @@ final class IslandModel: ObservableObject {
     let lyrics = LyricsMonitor()
     let shortcuts = ShortcutsLibrary()
     let reminders = RemindersMonitor()
+    /// Owned by the controller, which also uses it for connect and disconnect alerts.
+    let bluetooth: BluetoothMonitor
     let privacy: PrivacyMonitor
     let clipboard: ClipboardHistory
     let openSettings: () -> Void
@@ -361,20 +364,22 @@ final class IslandModel: ObservableObject {
 
     init(settings: IslandSettings, nowPlaying: NowPlayingMonitor, calendar: CalendarMonitor,
          weather: WeatherMonitor, privacy: PrivacyMonitor, clipboard: ClipboardHistory,
-         openSettings: @escaping () -> Void) {
+         bluetooth: BluetoothMonitor, openSettings: @escaping () -> Void) {
         self.settings = settings
         self.nowPlaying = nowPlaying
         self.calendar = calendar
         self.weather = weather
         self.privacy = privacy
         self.clipboard = clipboard
+        self.bluetooth = bluetooth
         self.openSettings = openSettings
 
         let publishers: [ObservableObjectPublisher] = [settings.objectWillChange, nowPlaying.objectWillChange, calendar.objectWillChange,
                                                         weather.objectWillChange, privacy.objectWillChange,
                                                         clipboard.objectWillChange, focus.objectWillChange, toggles.objectWillChange,
                                                         timer.objectWillChange, stats.objectWillChange, fps.objectWillChange, reminders.objectWillChange,
-                                                        lyrics.objectWillChange, shortcuts.objectWillChange]
+                                                        lyrics.objectWillChange, shortcuts.objectWillChange,
+                                                        bluetooth.objectWillChange]
         for publisher in publishers {
             publisher
                 .sink { [weak self] _ in self?.objectWillChange.send() }
@@ -644,6 +649,7 @@ final class IslandModel: ObservableObject {
             case .shortcuts: result = card(width: 440, extra: 196 + navigationRoom(for: .shortcuts))
             case .timer: result = card(width: 440, extra: (timer.isActive ? 164 : 146) + navigationRoom(for: .timer))
             case .system: result = card(width: 440, extra: 192 + navigationRoom(for: .system))
+            case .devices: result = card(width: 440, extra: 176 + navigationRoom(for: .devices))
             case .reminders: result = card(width: 440, extra: 232 + navigationRoom(for: .reminders))
             case .notes: result = card(width: 440, extra: 170 + navigationRoom(for: .notes))
             case .smartDrop: result = card(width: 480, extra: 168)
@@ -1202,6 +1208,7 @@ final class IslandModel: ObservableObject {
         if settings.showCalendar, calendar.next != nil { result.append(.calendar) }
         if settings.isPageOn(.timer) || timer.isActive { result.append(.timer) }
         if settings.isPageOn(.system) { result.append(.system) }
+        if settings.isPageOn(.devices) { result.append(.devices) }
         if settings.isPageOn(.reminders) { result.append(.reminders) }
         if settings.isPageOn(.notes) { result.append(.notes) }
         if settings.isPageOn(.shortcuts) { result.append(.shortcuts) }
@@ -1375,7 +1382,7 @@ final class IslandModel: ObservableObject {
         case .nowPlaying: return .nowPlaying
         case .calendar: return .calendar
         case .timer: return .timer
-        case .controls, .weather, .lyrics, .system, .reminders, .notes, .shortcuts, .mirror, .smartDrop: return nil
+        case .controls, .weather, .lyrics, .system, .devices, .reminders, .notes, .shortcuts, .mirror, .smartDrop: return nil
         }
     }
 

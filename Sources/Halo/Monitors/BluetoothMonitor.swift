@@ -22,7 +22,12 @@ struct BluetoothDeviceInfo: Equatable {
 
 /// Reports Bluetooth devices connecting and disconnecting.
 @MainActor
-final class BluetoothMonitor: NSObject {
+final class BluetoothMonitor: NSObject, ObservableObject {
+    /// Everything connected right now, for the Devices page. Kept separate from the
+    /// connect and disconnect alerts, which are about the moment something changes.
+    @Published private(set) var connected: [BluetoothDeviceInfo] = []
+    private var refreshTimer: Timer?
+
     var onConnect: ((BluetoothDeviceInfo) -> Void)?
     var onDisconnect: ((BluetoothDeviceInfo) -> Void)?
 
@@ -38,7 +43,32 @@ final class BluetoothMonitor: NSObject {
                                                          selector: #selector(deviceConnected(_:device:)))
     }
 
+    /// Asked for while the Devices page is open. Battery levels only move slowly, so
+    /// this runs on a lazy timer and stops the moment the page closes.
+    func beginWatchingDevices() {
+        refreshConnected()
+        guard refreshTimer == nil else { return }
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.refreshConnected() }
+        }
+    }
+
+    func endWatchingDevices() {
+        refreshTimer?.invalidate()
+        refreshTimer = nil
+    }
+
+    func refreshConnected() {
+        let paired = (IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice]) ?? []
+        let list = paired.filter { $0.isConnected() }
+            .map { Self.info(for: $0) }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        if list != connected { connected = list }
+    }
+
     func stop() {
+        endWatchingDevices()
+        connected = []
         connectNotification?.unregister()
         connectNotification = nil
         disconnectNotifications.values.forEach { $0.unregister() }

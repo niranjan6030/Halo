@@ -113,6 +113,7 @@ struct IslandView: View {
             case .shortcuts: ShortcutsPageView(model: model, library: model.shortcuts)
             case .timer: TimerPageView(model: model, timer: model.timer)
             case .system: SystemPageView(model: model, stats: model.stats, fps: model.fps)
+            case .devices: DevicesPageView(model: model, bluetooth: model.bluetooth)
             case .reminders: RemindersPageView(model: model, reminders: model.reminders)
             case .notes: NotesPageView(model: model)
             case .mirror: MirrorPageView(model: model)

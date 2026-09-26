@@ -141,7 +141,7 @@ public enum ControlAction: String, CaseIterable, Identifiable, Sendable {
 
 /// Optional pages in the island, each with its own icon in the row along the bottom.
 public enum IslandPage: String, CaseIterable, Identifiable, Sendable {
-    case lyrics, timer, system, reminders, notes, shortcuts, mirror
+    case lyrics, timer, system, devices, reminders, notes, shortcuts, mirror
 
     public var id: String { rawValue }
 
@@ -151,6 +151,7 @@ public enum IslandPage: String, CaseIterable, Identifiable, Sendable {
         case .shortcuts: return "Shortcuts"
         case .timer: return "Timer, Stopwatch and Pomodoro"
         case .system: return "CPU, FPS, Memory, Disk and Network"
+        case .devices: return "Devices and batteries"
         case .reminders: return "Reminders"
         case .notes: return "Quick Note"
         case .mirror: return "Mirror"
@@ -163,13 +164,14 @@ public enum IslandPage: String, CaseIterable, Identifiable, Sendable {
         case .shortcuts: return "square.stack.3d.up.fill"
         case .timer: return "timer"
         case .system: return "cpu"
+        case .devices: return "battery.100percent"
         case .reminders: return "checklist"
         case .notes: return "note.text"
         case .mirror: return "camera.fill"
         }
     }
 
-    public static let defaultPages = "lyrics,timer,system,notes,shortcuts"
+    public static let defaultPages = "lyrics,timer,system,devices,notes,shortcuts"
 }
 
 /// What a click on the island opens when nothing is running.

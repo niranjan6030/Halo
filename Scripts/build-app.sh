@@ -52,7 +52,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>LSUIElement</key>                   <true/>
     <key>NSHighResolutionCapable</key>       <true/>
     <key>NSBluetoothAlwaysUsageDescription</key>
-    <string>Halo shows AirPods and other Bluetooth devices in Halo when they connect.</string>
+    <string>Halo shows AirPods and other Bluetooth devices, and their battery levels, when they connect and on the Devices page.</string>
     <key>NSDesktopFolderUsageDescription</key>
     <string>Halo puts new screenshots on the Shelf so you can drag them anywhere.</string>
     <key>NSAppleEventsUsageDescription</key>

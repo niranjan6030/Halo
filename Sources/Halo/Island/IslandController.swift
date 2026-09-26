@@ -132,7 +132,7 @@ final class IslandController {
     init(settings: IslandSettings, openSettings: @escaping () -> Void) {
         self.settings = settings
         model = IslandModel(settings: settings, nowPlaying: nowPlaying, calendar: calendar, weather: weather,
-                            privacy: privacy, clipboard: clipboard, openSettings: openSettings)
+                            privacy: privacy, clipboard: clipboard, bluetooth: bluetooth, openSettings: openSettings)
 
         let hosting = IslandHostingView(rootView: IslandView(model: model))
         hosting.sizingOptions = []
@@ -357,6 +357,7 @@ final class IslandController {
         case "showPage.lyrics": model.expand(.lyrics)
         case "showPage.shortcuts": model.expand(.shortcuts)
         case "showPage.system": model.expand(.system)
+        case "showPage.devices": model.expand(.devices)
         case "showPage.reminders": model.expand(.reminders)
         case "showPage.notes": model.expand(.notes)
         case "showPage.mirror": model.expand(.mirror)
