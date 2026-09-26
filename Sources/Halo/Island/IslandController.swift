@@ -321,6 +321,7 @@ final class IslandController {
     private func handleCommand(_ command: String, value: Bool) {
         switch command {
         case "setLaunchAtLogin":
+            settings.opensAtLogin = value
             LoginItem.set(value)
             publishStatus()
         case "requestAccessibility":
@@ -423,7 +424,8 @@ final class IslandController {
     }
 
     func publishStatus() {
-        settings.updateStatus(launchAtLogin: LoginItem.isEnabled, accessibilityGranted: mediaKeys.isTrusted)
+        settings.updateStatus(launchAtLogin: LoginItem.isEnabled, accessibilityGranted: mediaKeys.isTrusted,
+                              loginItemStatus: LoginItem.statusName)
     }
 
     /// Accessibility has no change notification, so when something wants it and has

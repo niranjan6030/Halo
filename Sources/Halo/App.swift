@@ -48,9 +48,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         if !settings.hasLaunchedBefore {
             settings.hasLaunchedBefore = true
+            settings.opensAtLogin = true
             LoginItem.set(true)
             controller?.publishStatus()
             showSettings()
+        } else if settings.opensAtLogin && !LoginItem.isEnabled && !LoginItem.needsApproval {
+            // macOS drops the registration whenever the app's signature changes, which
+            // every update does. Nothing asked for it to be turned off, so put it back
+            // rather than quietly never starting again.
+            islandLog.notice("re-registering the login item")
+            LoginItem.set(true)
+            controller?.publishStatus()
         }
     }
 

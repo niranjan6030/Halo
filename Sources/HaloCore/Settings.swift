@@ -103,6 +103,12 @@ public final class Settings: ObservableObject {
         set { temperatureUnitRaw = newValue.rawValue }
     }
 
+    /// Whether the user wants Halo at login. Kept separately from whether macOS
+    /// currently has it registered: the registration is lost whenever the app's
+    /// signature changes, and without a record of the intent there is nothing to
+    /// put it back from.
+    @Published public var opensAtLogin: Bool { didSet { store(opensAtLogin, .opensAtLogin) } }
+
     @Published public var timerSound: Bool { didSet { store(timerSound, .timerSound) } }
     /// New screenshots go straight onto the clipboard, ready for ⌘V.
     @Published public var copyScreenshots: Bool { didSet { store(copyScreenshots, .copyScreenshots) } }
@@ -118,6 +124,9 @@ public final class Settings: ObservableObject {
 
     @Published public private(set) var launchAtLogin = false
     @Published public private(set) var accessibilityGranted = false
+    /// The raw SMAppService state, so the pane can tell "off" from "waiting for you
+    /// to approve it in Login Items".
+    @Published public private(set) var loginItemStatus = ""
     @Published public private(set) var isAppRunning = false
 
     /// Set by the app; runs commands that arrive from the System Settings pane.
@@ -130,7 +139,7 @@ public final class Settings: ObservableObject {
         case weatherCity, clipboardHistory, showCopiedInIsland
         case controlsLeftTile, controlsRightTile, controlsButtons, showVolumeSlider, idlePage, avoidMenuBarIcons
         case rainAlerts, extraPages, eyeBreaks, hydrationReminders, timerSound, copyScreenshots, screenshotsOffDesktop
-        case reminders, quietHoursOn, quietFrom, quietTo, alertPace, temperatureUnit
+        case reminders, quietHoursOn, quietFrom, quietTo, alertPace, temperatureUnit, opensAtLogin
     }
 
     private init() {
@@ -179,6 +188,7 @@ public final class Settings: ObservableObject {
             Key.timerSound.rawValue: true,
             Key.copyScreenshots.rawValue: true,
             Key.screenshotsOffDesktop.rawValue: true,
+            Key.opensAtLogin.rawValue: true,
             Key.quietHoursOn.rawValue: false,
             Key.quietFrom.rawValue: QuietHours.defaultFrom,
             Key.quietTo.rawValue: QuietHours.defaultTo,
@@ -233,6 +243,7 @@ public final class Settings: ObservableObject {
         extraPages = defaults.string(forKey: Key.extraPages.rawValue) ?? IslandPage.defaultPages
         eyeBreaks = defaults.bool(forKey: Key.eyeBreaks.rawValue)
         remindersJSON = defaults.string(forKey: Key.reminders.rawValue) ?? ""
+        opensAtLogin = defaults.bool(forKey: Key.opensAtLogin.rawValue)
         quietHoursOn = defaults.bool(forKey: Key.quietHoursOn.rawValue)
         quietFrom = defaults.integer(forKey: Key.quietFrom.rawValue)
         quietTo = defaults.integer(forKey: Key.quietTo.rawValue)
@@ -247,6 +258,7 @@ public final class Settings: ObservableObject {
         weatherCity = defaults.string(forKey: Key.weatherCity.rawValue) ?? ""
         launchAtLogin = defaults.bool(forKey: "status.launchAtLogin")
         accessibilityGranted = defaults.bool(forKey: "status.accessibilityGranted")
+        loginItemStatus = defaults.string(forKey: "status.loginItem") ?? ""
 
         let center = DistributedNotificationCenter.default()
         center.addObserver(forName: Self.changedNotification, object: nil, queue: .main) { [weak self] note in
@@ -274,6 +286,7 @@ public final class Settings: ObservableObject {
                     self.isAppRunning = true
                     if let value = info?["launchAtLogin"] as? Bool { self.launchAtLogin = value }
                     if let value = info?["accessibilityGranted"] as? Bool { self.accessibilityGranted = value }
+                    if let value = info?["loginItem"] as? String { self.loginItemStatus = value }
                 }
             }
             refreshAppRunning()
@@ -343,6 +356,7 @@ public final class Settings: ObservableObject {
         case .extraPages: assign(\.extraPages)
         case .eyeBreaks: assign(\.eyeBreaks)
         case .reminders: assign(\.remindersJSON)
+        case .opensAtLogin: assign(\.opensAtLogin)
         case .quietHoursOn: assign(\.quietHoursOn)
         case .quietFrom: assign(\.quietFrom)
         case .quietTo: assign(\.quietTo)
@@ -360,11 +374,16 @@ public final class Settings: ObservableObject {
     // MARK: Status and commands
 
     /// App side: publish status for the pane (and remember it for the next time the pane opens).
-    public func updateStatus(launchAtLogin: Bool, accessibilityGranted: Bool) {
+    public func updateStatus(launchAtLogin: Bool, accessibilityGranted: Bool,
+                             loginItemStatus: String = "") {
         if self.launchAtLogin != launchAtLogin { self.launchAtLogin = launchAtLogin }
         if self.accessibilityGranted != accessibilityGranted { self.accessibilityGranted = accessibilityGranted }
+        if !loginItemStatus.isEmpty, self.loginItemStatus != loginItemStatus {
+            self.loginItemStatus = loginItemStatus
+        }
         defaults.set(launchAtLogin, forKey: "status.launchAtLogin")
         defaults.set(accessibilityGranted, forKey: "status.accessibilityGranted")
+        defaults.set(loginItemStatus, forKey: "status.loginItem")
         broadcastStatus()
     }
 
@@ -372,7 +391,8 @@ public final class Settings: ObservableObject {
         guard context == .app else { return }
         DistributedNotificationCenter.default().postNotificationName(
             Self.statusNotification, object: nil,
-            userInfo: ["launchAtLogin": launchAtLogin, "accessibilityGranted": accessibilityGranted],
+            userInfo: ["launchAtLogin": launchAtLogin, "accessibilityGranted": accessibilityGranted,
+                       "loginItem": loginItemStatus],
             deliverImmediately: true
         )
     }
