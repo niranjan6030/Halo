@@ -179,6 +179,8 @@ public struct SettingsView: View {
 
                 RemindersSection(settings: settings)
 
+                HiddenAppsSection(settings: settings)
+
                 Section {
                     Toggle("Keep clear of menu bar icons", isOn: $settings.avoidMenuBarIcons)
                     if settings.avoidMenuBarIcons && !settings.accessibilityGranted {

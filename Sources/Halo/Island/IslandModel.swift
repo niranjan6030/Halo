@@ -321,7 +321,9 @@ final class IslandModel: ObservableObject {
     /// A press is in progress on the compact island (it squeezes, as on iPhone).
     @Published private(set) var isPressed = false
     /// An app is full screen on this display; the island stays out of the way.
-    @Published private(set) var isFullScreen = false
+    /// The island is keeping out of the way — a full-screen app, or one the user
+    /// asked it to stay out of.
+    @Published private(set) var isHidden = false
 
     /// The system output level, kept current so the island's slider never lags.
     @Published private(set) var volumeLevel: Float = 0.5
@@ -871,7 +873,7 @@ final class IslandModel: ObservableObject {
     // MARK: Alerts
 
     func show(_ event: TransientEvent) {
-        guard settings.isEnabled, !isFullScreen else { return }
+        guard settings.isEnabled, !isHidden else { return }
         if expanded != nil {
             // Only important alerts interrupt someone using the expanded island;
             // the volume and brightness keys still get their feedback in place.
@@ -965,10 +967,10 @@ final class IslandModel: ObservableObject {
     static let openHold: TimeInterval = 3.5
     private var holdUntil = Date.distantPast
 
-    func setFullScreen(_ fullScreen: Bool) {
-        guard isFullScreen != fullScreen else { return }
-        isFullScreen = fullScreen
-        if fullScreen { reset() }
+    func setHidden(_ hidden: Bool) {
+        guard isHidden != hidden else { return }
+        isHidden = hidden
+        if hidden { reset() }
     }
 
     func setMenuOpen(_ open: Bool) {

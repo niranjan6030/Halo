@@ -170,6 +170,13 @@ final class IslandController {
                                                object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.trackFullScreen() }
         })
+        // Whichever app comes forward decides whether the island should be out of the
+        // way. This watch is its own, rather than the menu bar one, which only runs
+        // while the island is keeping clear of menu bar icons.
+        observers.append(workspace.addObserver(forName: NSWorkspace.didActivateApplicationNotification,
+                                               object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.trackFullScreen() }
+        })
         observers.append(workspace.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated {
                 // Audio devices, displays and event taps can all change across sleep; start fresh.
@@ -517,7 +524,7 @@ final class IslandController {
         // instead of being lost for a whole cycle.
         wellness.canShow = { [weak self] in
             guard let self else { return false }
-            return !self.model.isFullScreen && self.model.expanded == nil
+            return !self.model.isHidden && self.model.expanded == nil
         }
         wellness.onReminder = { [weak self] reminder in
             self?.model.announce(reminder.text, symbol: reminder.symbol, tint: reminder.tint.color,
@@ -529,7 +536,7 @@ final class IslandController {
         }
         model.refreshVolume()
         trackFullScreen()
-        if !panel.isVisible, !model.isFullScreen { panel.orderFrontRegardless() }
+        if !panel.isVisible, !model.isHidden { panel.orderFrontRegardless() }
         startMouseTracking()
     }
 
@@ -780,15 +787,19 @@ final class IslandController {
         // too, which is live even when the mouse timer that usually drives it is not.
         guard settings.isEnabled, let screen = targetScreen()?.screen else { return }
         let fullScreen = settings.hideInFullScreen && FullScreenMonitor.isFullScreen(on: screen)
-        if fullScreen != model.isFullScreen {
-            islandLog.notice("full screen \(fullScreen, privacy: .public)")
-            model.setFullScreen(fullScreen)
+        // Apps the user asked the island to stay out of are hidden the same way, so
+        // the panel is ordered out rather than merely kept quiet.
+        let inHiddenApp = settings.hides(app: NSWorkspace.shared.frontmostApplication?.bundleIdentifier)
+        let hidden = fullScreen || inHiddenApp
+        if hidden != model.isHidden {
+            islandLog.notice("hidden \(hidden, privacy: .public)")
+            model.setHidden(hidden)
         }
         // Enforce the window state every time rather than only when the flag flips.
         // Switching Spaces, waking, and a full-screen app closing can all leave the
         // panel ordered out behind our back; with a change-only check nothing ever
         // brought it back and the island stayed gone until the app was relaunched.
-        if fullScreen {
+        if hidden {
             if panel.isVisible { panel.orderOut(nil) }
         } else if !panel.isVisible {
             panel.orderFrontRegardless()

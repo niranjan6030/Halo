@@ -109,6 +109,20 @@ public final class Settings: ObservableObject {
     /// put it back from.
     @Published public var opensAtLogin: Bool { didSet { store(opensAtLogin, .opensAtLogin) } }
 
+    /// Bundle identifiers of apps to stay hidden in — see `hiddenApps`.
+    @Published public var hiddenAppsJSON: String { didSet { store(hiddenAppsJSON, .hiddenApps) } }
+
+    public var hiddenApps: [String] {
+        get { HiddenApps.decode(hiddenAppsJSON) }
+        set { hiddenAppsJSON = HiddenApps.encode(newValue) }
+    }
+
+    /// Whether the island should keep out of the way of whatever is in front.
+    public func hides(app id: String?) -> Bool {
+        guard let id, !id.isEmpty else { return false }
+        return hiddenApps.contains(id)
+    }
+
     @Published public var timerSound: Bool { didSet { store(timerSound, .timerSound) } }
     /// New screenshots go straight onto the clipboard, ready for ⌘V.
     @Published public var copyScreenshots: Bool { didSet { store(copyScreenshots, .copyScreenshots) } }
@@ -140,6 +154,7 @@ public final class Settings: ObservableObject {
         case controlsLeftTile, controlsRightTile, controlsButtons, showVolumeSlider, idlePage, avoidMenuBarIcons
         case rainAlerts, extraPages, eyeBreaks, hydrationReminders, timerSound, copyScreenshots, screenshotsOffDesktop
         case reminders, quietHoursOn, quietFrom, quietTo, alertPace, temperatureUnit, opensAtLogin
+        case hiddenApps
     }
 
     private init() {
@@ -243,6 +258,7 @@ public final class Settings: ObservableObject {
         extraPages = defaults.string(forKey: Key.extraPages.rawValue) ?? IslandPage.defaultPages
         eyeBreaks = defaults.bool(forKey: Key.eyeBreaks.rawValue)
         remindersJSON = defaults.string(forKey: Key.reminders.rawValue) ?? ""
+        hiddenAppsJSON = defaults.string(forKey: Key.hiddenApps.rawValue) ?? ""
         opensAtLogin = defaults.bool(forKey: Key.opensAtLogin.rawValue)
         quietHoursOn = defaults.bool(forKey: Key.quietHoursOn.rawValue)
         quietFrom = defaults.integer(forKey: Key.quietFrom.rawValue)
@@ -356,6 +372,7 @@ public final class Settings: ObservableObject {
         case .extraPages: assign(\.extraPages)
         case .eyeBreaks: assign(\.eyeBreaks)
         case .reminders: assign(\.remindersJSON)
+        case .hiddenApps: assign(\.hiddenAppsJSON)
         case .opensAtLogin: assign(\.opensAtLogin)
         case .quietHoursOn: assign(\.quietHoursOn)
         case .quietFrom: assign(\.quietFrom)

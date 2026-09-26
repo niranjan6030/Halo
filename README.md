@@ -139,6 +139,10 @@ Switch each on in System Settings → Dynamic Island → Pages. Every page gets 
 | Quick Note | A note that's always a click away, saved as you type; copy or clear it from the island. |
 | Mirror | A live, mirrored camera view for a check before a call. The camera runs only while it's open. |
 
+**Hide In.** Name any apps the island should keep out of the way of, and while one of
+them is in front it stays gone entirely — nothing over the notch, no pop-ups. Useful for
+anything whose own controls live up there.
+
 **Reminders.** Recurring nudges in the island, as many as you like. Each one has its own
 wording, SF Symbol, colour, interval and how long it holds on screen — turn the hold up and
 the island becomes the timer you look away from. Two ship switched on: the 20-20-20 rule
