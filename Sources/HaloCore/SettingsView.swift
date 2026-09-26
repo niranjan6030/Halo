@@ -82,9 +82,10 @@ public struct SettingsView: View {
                     Toggle("Show volume and brightness in the island", isOn: $settings.replaceSystemHUD)
                     if settings.replaceSystemHUD && !settings.accessibilityGranted {
                         HStack(alignment: .firstTextBaseline) {
-                            Text("Halo needs Accessibility access to take over the volume and brightness keys.")
+                            Text("Halo needs Accessibility access to take over the volume and brightness keys. If Halo is already ticked in that list, switch it off and on again — macOS ties the permission to the exact copy of the app, so it stops matching after an update.")
                                 .font(.callout)
                                 .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
                             Spacer()
                             Button("Allow…") { settings.send(command: "requestAccessibility") }
                         }
@@ -182,9 +183,10 @@ public struct SettingsView: View {
                     Toggle("Keep clear of menu bar icons", isOn: $settings.avoidMenuBarIcons)
                     if settings.avoidMenuBarIcons && !settings.accessibilityGranted {
                         HStack(alignment: .firstTextBaseline) {
-                            Text("Allow Accessibility so Halo can see where each app's menus end. Until then it stays as narrow as it can.")
+                            Text("Allow Accessibility so Halo can see where each app's menus end. Until then it stays as narrow as it can. Already ticked? Switch Halo off and on again in that list — the permission is tied to the exact copy of the app.")
                                 .font(.callout)
                                 .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
                             Spacer()
                             Button("Allow…") { settings.send(command: "requestAccessibility") }
                         }

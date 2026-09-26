@@ -70,7 +70,21 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </dict>
 </plist>
 PLIST
-codesign --force --deep --sign - "$APP"
+# macOS ties Accessibility (and the other privacy permissions) to the app's code
+# signature. Ad-hoc signing has no stable identity, so the grant is pinned to that
+# one build and silently stops matching the next time this script runs: the app
+# stays ticked in Privacy & Security while AXIsProcessTrusted() returns false.
+#
+# Signing with a real identity keeps the grant across rebuilds. Set HALO_SIGN_IDENTITY
+# to one from `security find-identity -v -p codesigning`, or leave it unset to carry
+# on ad-hoc and re-tick the permission after each build.
+SIGN_IDENTITY="${HALO_SIGN_IDENTITY:--}"
+if [ "$SIGN_IDENTITY" = "-" ]; then
+    echo "note: signing ad-hoc. Accessibility permission will need re-granting after this build."
+    echo "      Set HALO_SIGN_IDENTITY to a codesigning identity to keep it across rebuilds."
+fi
+
+codesign --force --deep --sign "$SIGN_IDENTITY" "$APP"
 
 echo "Building System Settings page…"
 mkdir -p "$PANE/Contents/MacOS" "$PANE/Contents/Resources"
@@ -105,7 +119,7 @@ cat > "$PANE/Contents/Info.plist" <<PLIST
 </dict>
 </plist>
 PLIST
-codesign --force --sign - "$PANE"
+codesign --force --sign "$SIGN_IDENTITY" "$PANE"
 
 mkdir -p "$ROOT/build"
 rm -rf "$ROOT/build/Halo.app" "$ROOT/build/Halo.prefPane"

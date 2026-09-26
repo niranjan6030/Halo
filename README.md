@@ -267,8 +267,18 @@ requested up front. What each one is for:
 - **Desktop** and **Downloads** folders, for screenshots landing on the Shelf and AirDrop /
   download alerts.
 
-Building it yourself means an unsigned, locally-built app, so macOS re-asks for
-Accessibility and Bluetooth after every rebuild — expected, not a bug.
+Building it yourself means an ad-hoc signed app, and macOS ties these permissions to the
+app's signature. Since an ad-hoc signature is pinned to that one build, a rebuild stops
+matching the permission you already gave — and it does not re-ask. Halo stays ticked in
+Privacy & Security while the feature quietly does nothing.
+
+The fix is to switch Halo off and on again in that list (or remove it with − and add it
+back) after a rebuild. To keep the grant across rebuilds instead, sign with a real
+identity: pick one from `security find-identity -v -p codesigning` and build with
+
+```sh
+HALO_SIGN_IDENTITY="Apple Development: you@example.com (XXXXXXXXXX)" ./Scripts/build-app.sh install
+```
 
 ## Requirements
 
