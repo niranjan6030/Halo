@@ -231,16 +231,25 @@ struct CompactActivityView: View {
                 trailing(room: left)
             }
         } else {
-            // One side is full: both halves sit together on the side with room.
+            // One side is full: both halves sit together on the side with room — but
+            // only while there is room for both. Halved into a sliver they shrink to a
+            // pair of specks touching each other and the edge, which reads as a smudge
+            // rather than as anything. Below that, the trailing half is dropped and the
+            // leading one — the artwork, the caller, the thing worth recognising — gets
+            // the whole width at its proper size.
             let room = max(left, right)
+            let content = max(0, room - topRadius)
+            let fitsBoth = content >= notch.height + 8
             HStack(spacing: 0) {
                 if right > 0 { Spacer(minLength: 0) }
                 HStack(spacing: 4) {
-                    leading(room: (room - topRadius) / 2).popIn(delay: 0.1)
-                    trailing(room: (room - topRadius) / 2).popIn(delay: 0.16)
+                    leading(room: fitsBoth ? (content - 4) / 2 : content).popIn(delay: 0.1)
+                    if fitsBoth {
+                        trailing(room: (content - 4) / 2).popIn(delay: 0.16)
+                    }
                 }
                 // Entirely beside the notch, never under the camera housing.
-                .frame(width: max(0, room - topRadius), height: notch.height)
+                .frame(width: content, height: notch.height)
                 .padding(right > 0 ? .trailing : .leading, topRadius)
                 if left > 0 { Spacer(minLength: 0) }
             }

@@ -53,6 +53,16 @@ enum Snapshots {
             $0.nowPlaying.loadPreview(track: track, artwork: artwork)
             $0.updateMenuBarRoom(.init(left: 0, right: 37))
         }))
+        // The menu-bar squeeze at both ends of its range: too narrow for two elements,
+        // and just wide enough for both.
+        states.append(("34-menus-left-tight", {
+            $0.nowPlaying.loadPreview(track: track, artwork: artwork)
+            $0.updateMenuBarRoom(.init(left: 0, right: 37))
+        }))
+        states.append(("35-menus-left-roomy", {
+            $0.nowPlaying.loadPreview(track: track, artwork: artwork)
+            $0.updateMenuBarRoom(.init(left: 0, right: 64))
+        }))
         states.append(("29-reminders", { $0.expand(.reminders) }))
         states.append(("17-network-hotspot", { $0.show(.network(.hotspot)) }))
         states.append(("18-caps-lock", { $0.show(.capsLock(on: true)) }))
