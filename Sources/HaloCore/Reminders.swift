@@ -39,16 +39,21 @@ public struct Reminder: Codable, Identifiable, Equatable {
     /// distance, say, which is the whole point of the 20-20-20 rule.
     public var seconds: Int
     public var tint: Tint
+    /// Weekdays this runs on, numbered the way `Calendar` does: 1 is Sunday.
+    /// All seven unless the user narrows it.
+    public var days: Set<Int>
     public var isOn: Bool
 
     public init(id: UUID = UUID(), text: String, symbol: String, minutes: Int,
-                seconds: Int = defaultSeconds, tint: Tint = .white, isOn: Bool) {
+                seconds: Int = defaultSeconds, tint: Tint = .white,
+                days: Set<Int> = everyDay, isOn: Bool) {
         self.id = id
         self.text = text
         self.symbol = symbol
         self.minutes = minutes
         self.seconds = seconds
         self.tint = tint
+        self.days = days
         self.isOn = isOn
     }
 
@@ -61,6 +66,7 @@ public struct Reminder: Codable, Identifiable, Equatable {
         minutes = try container.decode(Int.self, forKey: .minutes)
         seconds = try container.decodeIfPresent(Int.self, forKey: .seconds) ?? Self.defaultSeconds
         tint = try container.decodeIfPresent(Tint.self, forKey: .tint) ?? .white
+        days = try container.decodeIfPresent(Set<Int>.self, forKey: .days) ?? Self.everyDay
         isOn = try container.decode(Bool.self, forKey: .isOn)
     }
 
@@ -95,6 +101,24 @@ public struct Reminder: Codable, Identifiable, Equatable {
 
     public static let minimumMinutes = 1
     public static let maximumMinutes = 480
+    public static let everyDay: Set<Int> = [1, 2, 3, 4, 5, 6, 7]
+    public static let weekdaysOnly: Set<Int> = [2, 3, 4, 5, 6]
+
+    /// Whether this should run at all today.
+    public func runs(on date: Date, calendar: Calendar = .current) -> Bool {
+        days.isEmpty || days.contains(calendar.component(.weekday, from: date))
+    }
+
+    /// "Weekdays", "Weekends", "Mon, Wed, Fri" — or nothing at all when it runs daily.
+    public static func daysDescription(_ days: Set<Int>, calendar: Calendar = .current) -> String? {
+        if days.isEmpty || days == everyDay { return nil }
+        if days == weekdaysOnly { return "Weekdays" }
+        if days == [1, 7] { return "Weekends" }
+        let symbols = calendar.shortWeekdaySymbols
+        return days.sorted().compactMap { symbols.indices.contains($0 - 1) ? symbols[$0 - 1] : nil }
+            .joined(separator: ", ")
+    }
+
     public static let defaultSeconds = 4
     public static let minimumSeconds = 2
     public static let maximumSeconds = 120
@@ -123,6 +147,9 @@ public struct Reminder: Codable, Identifiable, Equatable {
         copy.symbol = Self.symbolExists(symbolName) ? symbolName : "bell.fill"
         copy.minutes = min(Self.maximumMinutes, max(Self.minimumMinutes, minutes))
         copy.seconds = min(Self.maximumSeconds, max(Self.minimumSeconds, seconds))
+        // No days at all would mean a reminder that can never run; read it as every day.
+        copy.days = days.isEmpty ? Self.everyDay : days.filter { (1...7).contains($0) }
+        if copy.days.isEmpty { copy.days = Self.everyDay }
         return copy
     }
 

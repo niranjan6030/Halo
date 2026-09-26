@@ -58,7 +58,11 @@ final class WellnessMonitor {
         }
         awayMinutes = 0
 
+        let today = Date()
         for reminder in reminders where reminder.isOn {
+            // Not one of its days: it neither counts nor shows, so a Monday reminder
+            // does not arrive first thing Tuesday carrying the weekend's minutes.
+            guard reminder.runs(on: today) else { continue }
             let count = (minutes[reminder.id] ?? 0) + 1
             guard count >= reminder.minutes else {
                 minutes[reminder.id] = count

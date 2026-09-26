@@ -144,7 +144,7 @@ them is in front it stays gone entirely — nothing over the notch, no pop-ups. 
 anything whose own controls live up there.
 
 **Reminders.** Recurring nudges in the island, as many as you like. Each one has its own
-wording, SF Symbol, colour, interval and how long it holds on screen — turn the hold up and
+wording, SF Symbol, colour, interval, which days it runs on and how long it holds on screen — turn the hold up and
 the island becomes the timer you look away from. Two ship switched on: the 20-20-20 rule
 (every 20 minutes, holding for its full 20 seconds) and a glass of water every hour.
 

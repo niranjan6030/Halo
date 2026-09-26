@@ -85,6 +85,13 @@ private struct RemindersRow: View {
     @Binding var isOn: Bool
     let edit: () -> Void
 
+    private var caption: String {
+        var parts = [Reminder.intervalDescription(reminder.minutes)]
+        if reminder.seconds > Reminder.defaultSeconds { parts.append("holds \(reminder.seconds)s") }
+        if let days = Reminder.daysDescription(reminder.days) { parts.append(days) }
+        return parts.joined(separator: " · ")
+    }
+
     var body: some View {
         Toggle(isOn: $isOn) {
             HStack(spacing: 10) {
@@ -102,9 +109,7 @@ private struct RemindersRow: View {
                     Text(reminder.text)
                         .lineLimit(1)
                         .truncationMode(.tail)
-                    Text(reminder.seconds > Reminder.defaultSeconds
-                         ? "\(Reminder.intervalDescription(reminder.minutes)) · holds \(reminder.seconds)s"
-                         : Reminder.intervalDescription(reminder.minutes))
+                    Text(caption)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -125,6 +130,13 @@ private struct ReminderEditor: View {
     let save: (Reminder) -> Void
     let delete: () -> Void
     @Environment(\.dismiss) private var dismiss
+
+    /// First letter of each weekday, in the Mac's own language and week order.
+    static func dayInitial(_ day: Int) -> String {
+        let symbols = Calendar.current.shortWeekdaySymbols
+        guard symbols.indices.contains(day - 1) else { return "?" }
+        return String(symbols[day - 1].prefix(1))
+    }
 
     private var symbolIsKnown: Bool {
         Reminder.symbolExists(reminder.symbol.trimmingCharacters(in: .whitespacesAndNewlines))
@@ -163,6 +175,33 @@ private struct ReminderEditor: View {
                     }
                 } footer: {
                     Text("Turn the hold up for anything you are meant to do while it is showing — twenty seconds of looking into the distance, say, so the island is the timer.")
+                }
+
+                Section("Days") {
+                    HStack(spacing: 6) {
+                        ForEach(1...7, id: \.self) { day in
+                            let on = reminder.days.contains(day)
+                            Button {
+                                if on { reminder.days.remove(day) } else { reminder.days.insert(day) }
+                            } label: {
+                                Text(Self.dayInitial(day))
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .frame(width: 30, height: 26)
+                                    .background(RoundedRectangle(cornerRadius: 6)
+                                        .fill(on ? reminder.tint.color.opacity(0.25) : Color.secondary.opacity(0.1)))
+                                    .overlay(RoundedRectangle(cornerRadius: 6)
+                                        .stroke(on ? reminder.tint.color : .clear, lineWidth: 1.5))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        Spacer()
+                    }
+                    HStack {
+                        Button("Every day") { reminder.days = Reminder.everyDay }
+                        Button("Weekdays") { reminder.days = Reminder.weekdaysOnly }
+                        Spacer()
+                    }
+                    .buttonStyle(.link)
                 }
 
                 Section("Icon") {
