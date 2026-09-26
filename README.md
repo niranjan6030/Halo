@@ -139,6 +139,9 @@ Switch each on in System Settings → Dynamic Island → Pages. Every page gets 
 | Quick Note | A note that's always a click away, saved as you type; copy or clear it from the island. |
 | Mirror | A live, mirrored camera view for a check before a call. The camera runs only while it's open. |
 
+**Keyboard shortcuts.** ⌃⌘H opens the island and ⌃⌘V the clipboard, and both can be
+set to whatever you like — click the shortcut in Settings and press the keys.
+
 **Hide In.** Name any apps the island should keep out of the way of, and while one of
 them is in front it stays gone entirely — nothing over the notch, no pop-ups. Useful for
 anything whose own controls live up there.

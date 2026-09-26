@@ -123,6 +123,21 @@ public final class Settings: ObservableObject {
         return hiddenApps.contains(id)
     }
 
+    @Published public var islandShortcutJSON: String { didSet { store(islandShortcutJSON, .islandShortcut) } }
+    @Published public var clipboardShortcutJSON: String { didSet { store(clipboardShortcutJSON, .clipboardShortcut) } }
+
+    /// The shortcut that opens the island. Falls back to ⌃⌘H if nothing usable is stored.
+    public var islandShortcut: Shortcut {
+        get { Shortcut.decode(islandShortcutJSON, fallback: .island) }
+        set { islandShortcutJSON = Shortcut.encode(newValue) }
+    }
+
+    /// The shortcut that opens the clipboard. Falls back to ⌃⌘V.
+    public var clipboardShortcut: Shortcut {
+        get { Shortcut.decode(clipboardShortcutJSON, fallback: .clipboard) }
+        set { clipboardShortcutJSON = Shortcut.encode(newValue) }
+    }
+
     @Published public var timerSound: Bool { didSet { store(timerSound, .timerSound) } }
     /// New screenshots go straight onto the clipboard, ready for ⌘V.
     @Published public var copyScreenshots: Bool { didSet { store(copyScreenshots, .copyScreenshots) } }
@@ -154,7 +169,7 @@ public final class Settings: ObservableObject {
         case controlsLeftTile, controlsRightTile, controlsButtons, showVolumeSlider, idlePage, avoidMenuBarIcons
         case rainAlerts, extraPages, eyeBreaks, hydrationReminders, timerSound, copyScreenshots, screenshotsOffDesktop
         case reminders, quietHoursOn, quietFrom, quietTo, alertPace, temperatureUnit, opensAtLogin
-        case hiddenApps
+        case hiddenApps, islandShortcut, clipboardShortcut
     }
 
     private init() {
@@ -259,6 +274,8 @@ public final class Settings: ObservableObject {
         eyeBreaks = defaults.bool(forKey: Key.eyeBreaks.rawValue)
         remindersJSON = defaults.string(forKey: Key.reminders.rawValue) ?? ""
         hiddenAppsJSON = defaults.string(forKey: Key.hiddenApps.rawValue) ?? ""
+        islandShortcutJSON = defaults.string(forKey: Key.islandShortcut.rawValue) ?? ""
+        clipboardShortcutJSON = defaults.string(forKey: Key.clipboardShortcut.rawValue) ?? ""
         opensAtLogin = defaults.bool(forKey: Key.opensAtLogin.rawValue)
         quietHoursOn = defaults.bool(forKey: Key.quietHoursOn.rawValue)
         quietFrom = defaults.integer(forKey: Key.quietFrom.rawValue)
@@ -373,6 +390,8 @@ public final class Settings: ObservableObject {
         case .eyeBreaks: assign(\.eyeBreaks)
         case .reminders: assign(\.remindersJSON)
         case .hiddenApps: assign(\.hiddenAppsJSON)
+        case .islandShortcut: assign(\.islandShortcutJSON)
+        case .clipboardShortcut: assign(\.clipboardShortcutJSON)
         case .opensAtLogin: assign(\.opensAtLogin)
         case .quietHoursOn: assign(\.quietHoursOn)
         case .quietFrom: assign(\.quietFrom)

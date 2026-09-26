@@ -181,6 +181,8 @@ public struct SettingsView: View {
 
                 HiddenAppsSection(settings: settings)
 
+                ShortcutsSection(settings: settings)
+
                 Section {
                     Toggle("Keep clear of menu bar icons", isOn: $settings.avoidMenuBarIcons)
                     if settings.avoidMenuBarIcons && !settings.accessibilityGranted {

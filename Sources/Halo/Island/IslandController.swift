@@ -86,11 +86,10 @@ final class IslandController {
             self?.model.show(.message(text: text, symbol: symbol))
         }
     }
-    /// ⌃⌘V, from anywhere.
-    /// ⌃⌘H opens the island, or puts it away.
-    private lazy var islandHotKey = GlobalHotKey(keyCode: 4, modifiers: 4096 | 256) { [weak self] in
-        self?.model.toggleFromShortcut()
-    }
+    /// Opens the island, or puts it away. Rebuilt whenever the user changes the keys,
+    /// since a registered hot key is tied to the combination it was made with.
+    private var islandHotKey: GlobalHotKey?
+    private var islandShortcut: Shortcut?
 
     private var scrollRemainder: CGFloat = 0
 
@@ -108,10 +107,9 @@ final class IslandController {
         return true
     }
 
-    private lazy var clipboardHotKey = GlobalHotKey(keyCode: 9, modifiers: 4096 | 256) { [weak self] in
-        guard let self, self.settings.clipboardHistory else { return }
-        self.clipboardWindow.toggle()
-    }
+    /// Opens the clipboard, from anywhere.
+    private var clipboardHotKey: GlobalHotKey?
+    private var clipboardShortcut: Shortcut?
     private let privacy = PrivacyMonitor()
     private let volume = VolumeMonitor()
     private let brightness = BrightnessMonitor()
@@ -430,6 +428,44 @@ final class IslandController {
         }
     }
 
+    /// Registering a hot key binds it to one key combination, so a change means
+    /// building a new one. Rebuilt only when the combination actually differs, or
+    /// every pass through the settings would tear down a working shortcut.
+    private func applyIslandShortcut() {
+        let wanted = settings.islandShortcut
+        guard islandShortcut != wanted || islandHotKey == nil else { return }
+        islandHotKey?.unregister()
+        islandShortcut = wanted
+        let hotKey = GlobalHotKey(keyCode: wanted.keyCode, modifiers: wanted.modifiers) { [weak self] in
+            self?.model.toggleFromShortcut()
+        }
+        islandHotKey = hotKey
+        if !hotKey.register() {
+            islandLog.error("couldn't register \(wanted.display, privacy: .public)")
+        }
+    }
+
+    private func applyClipboardShortcut(enabled: Bool) {
+        guard enabled else {
+            clipboardHotKey?.unregister()
+            clipboardHotKey = nil
+            clipboardShortcut = nil
+            return
+        }
+        let wanted = settings.clipboardShortcut
+        guard clipboardShortcut != wanted || clipboardHotKey == nil else { return }
+        clipboardHotKey?.unregister()
+        clipboardShortcut = wanted
+        let hotKey = GlobalHotKey(keyCode: wanted.keyCode, modifiers: wanted.modifiers) { [weak self] in
+            guard let self, self.settings.clipboardHistory else { return }
+            self.clipboardWindow.toggle()
+        }
+        clipboardHotKey = hotKey
+        if !hotKey.register() {
+            islandLog.error("couldn't register \(wanted.display, privacy: .public)")
+        }
+    }
+
     func publishStatus() {
         settings.updateStatus(launchAtLogin: LoginItem.isEnabled, accessibilityGranted: mediaKeys.isTrusted,
                               loginItemStatus: LoginItem.statusName)
@@ -489,13 +525,9 @@ final class IslandController {
         toggle(weather.start, weather.stop, settings.usesWeather)
         toggle(clipboard.start, clipboard.stop, settings.clipboardHistory)
         clipboard.copiesScreenshots = settings.copyScreenshots
-        if !islandHotKey.register() { islandLog.error("couldn't register ⌃⌘H") }
+        applyIslandShortcut()
         ScreenshotLocation.apply(keepOffDesktop: settings.clipboardHistory && settings.screenshotsOffDesktop)
-        if settings.clipboardHistory {
-            if !clipboardHotKey.register() { islandLog.error("couldn't register ⌃⌘V") }
-        } else {
-            clipboardHotKey.unregister()
-        }
+        applyClipboardShortcut(enabled: settings.clipboardHistory)
         if settings.usesWeather {
             weather.updateUnit(settings.temperatureUnit)
             weather.updateCity(settings.weatherCity)
@@ -652,8 +684,12 @@ final class IslandController {
         wellness.update(reminders: [], quietHours: settings.quietHours)
         weather.stop()
         clipboard.stop()
-        clipboardHotKey.unregister()
-        islandHotKey.unregister()
+        clipboardHotKey?.unregister()
+        clipboardHotKey = nil
+        clipboardShortcut = nil
+        islandHotKey?.unregister()
+        islandHotKey = nil
+        islandShortcut = nil
         network.stop()
         downloads.stop()
         mediaKeys.stop()
